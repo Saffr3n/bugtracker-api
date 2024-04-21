@@ -7,6 +7,12 @@ interface ErrorResponse {
   readonly type: string;
   readonly status: number;
   readonly title: string;
-  readonly detail: string;
+  readonly detail?: string;
   readonly stack?: string;
+}
+
+namespace Express {
+  type User = import('mongoose').HydratedDocumentFromSchema<
+    typeof import('./models/user').default['schema']
+  >;
 }
