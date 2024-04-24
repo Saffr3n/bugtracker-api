@@ -3,16 +3,16 @@ import mongoose from 'mongoose';
 const UserSchema = new mongoose.Schema(
   {
     username: { type: String, required: true },
-    hash: { type: String, required: true },
     email: { type: String, required: true },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    hash: { type: String, required: true },
     role: {
       type: String,
       enum: ['Admin', 'Project Manager', 'Developer', 'User'],
       default: 'User'
     },
     registerDate: { type: Date, default: new Date() },
+    firstName: { type: String, required: false },
+    lastName: { type: String, required: false },
     avatarUrl: { type: String, required: false }
   },
   {
@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema(
     virtuals: {
       fullName: {
         get() {
-          return `${this.firstName} ${this.lastName}`;
+          return `${this.firstName ?? ''} ${this.lastName ?? ''}`.trim();
         }
       },
       url: {
