@@ -35,10 +35,10 @@ const UserSchema = new mongoose.Schema(
           id: this.id as string,
           username: this.username,
           email: this.email,
+          role: this.role,
+          registerDate: this.registerDate.toISOString(),
           firstName: this.firstName,
           lastName: this.lastName,
-          role: this.role,
-          registerDate: this.registerDate,
           avatarUrl: this.avatarUrl
         };
       }
