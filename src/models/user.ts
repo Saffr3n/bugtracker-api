@@ -11,18 +11,11 @@ const UserSchema = new mongoose.Schema(
       default: 'User'
     },
     registerDate: { type: Date, default: new Date() },
-    firstName: { type: String, required: false },
-    lastName: { type: String, required: false },
     avatarUrl: { type: String, required: false }
   },
   {
     collection: 'users',
     virtuals: {
-      fullName: {
-        get() {
-          return `${this.firstName ?? ''} ${this.lastName ?? ''}`.trim();
-        }
-      },
       url: {
         get() {
           return `/users/${this.id}`;
@@ -37,8 +30,6 @@ const UserSchema = new mongoose.Schema(
           email: this.email,
           role: this.role,
           registerDate: this.registerDate.toISOString(),
-          firstName: this.firstName,
-          lastName: this.lastName,
           avatarUrl: this.avatarUrl
         };
       }
