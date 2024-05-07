@@ -6,14 +6,8 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcryptjs';
 import logger from 'morgan';
-import path from 'path';
+import SystemError, { clientErrors } from './utils/errors';
 import User from './models/user';
-import {
-  InternalServerError,
-  MongoError,
-  BcryptError,
-  PathNotFoundError
-} from './utils/errors';
 
 const app = express();
 
@@ -32,9 +26,9 @@ passport.use(
       $or: [{ username: username }, { email: username }]
     })
       .exec()
-      .catch((err) => new MongoError(err));
+      .catch((err) => new SystemError(err));
 
-    if (user instanceof MongoError) {
+    if (user instanceof SystemError) {
       return done(user);
     }
 
@@ -44,9 +38,9 @@ passport.use(
 
     const isCorrectPassword = await bcrypt
       .compare(password, user.hash)
-      .catch((err) => new BcryptError(err));
+      .catch((err) => new SystemError(err));
 
-    if (isCorrectPassword instanceof BcryptError) {
+    if (isCorrectPassword instanceof SystemError) {
       return done(isCorrectPassword);
     }
 
@@ -63,9 +57,9 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
   const user = await User.findById(id)
     .exec()
-    .catch((err) => new MongoError(err));
+    .catch((err) => new SystemError(err));
 
-  if (user instanceof MongoError) {
+  if (user instanceof SystemError) {
     return done(user);
   }
 
@@ -73,7 +67,6 @@ passport.deserializeUser(async (id, done) => {
 });
 
 app.use(logger('dev'));
-app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
@@ -93,10 +86,32 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use((req, res, next) => next(new PathNotFoundError()));
+app.get('/errors/:name', (req, res, next) => {
+  const errName = req.params.name
+    .toLowerCase()
+    .split('-')
+    .map((word) => `${word[0]?.toUpperCase()}${word.slice(1)}`)
+    .join('') as keyof typeof clientErrors;
+
+  const errClass = clientErrors[errName];
+
+  if (!errClass) {
+    return next();
+  }
+
+  const err = new errClass();
+  const { title, status, detail } = err;
+
+  res
+    .status(200)
+    .send(`<h1>${title}</h1>\n<h2>${status}</h2>\n<p>${detail}</p>`);
+});
+
+app.use((req, res, next) => next(new clientErrors.PathNotFound()));
 app.use((err: Err, req: Req, res: Res, next: Next) => {
   if (env === 'production' && err.status >= 500) {
-    err = new InternalServerError();
+    console.error(err);
+    err = new clientErrors.Internal();
   }
 
   res.status(err.status).json({
