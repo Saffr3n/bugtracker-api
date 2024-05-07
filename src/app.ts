@@ -12,12 +12,8 @@ import userRouter from './routes/user';
 
 const app = express();
 
-const env = process.env.NODE_ENV || 'development';
-const port = process.env.PORT || 3000;
-const secret = process.env.SECRET || 'secret';
 const dbUri = process.env.DB_URI || 'mongodb://127.0.0.1:27017';
 const dbName = process.env.DB_NAME || 'bugtracker';
-
 mongoose.set('strictQuery', false);
 mongoose.connect(dbUri, { dbName }).catch(console.error);
 
@@ -72,7 +68,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
   session({
-    secret,
+    secret: process.env.SECRET || 'secret',
     cookie: { maxAge: 1000 * 60 * 60 * 24 },
     resave: false,
     saveUninitialized: false,
@@ -112,6 +108,8 @@ app.get('/errors/:name', (req, res, next) => {
 
 app.use((req, res, next) => next(new clientErrors.PathNotFound()));
 app.use((err: Err, req: Req, res: Res, next: Next) => {
+  const env = process.env.NODE_ENV || 'development';
+
   if (env === 'production' && err.status >= 500) {
     console.error(err);
     err = new clientErrors.Internal();
@@ -126,4 +124,5 @@ app.use((err: Err, req: Req, res: Res, next: Next) => {
   } as ErrorResponse);
 });
 
+const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`App is available on port ${port}`));
