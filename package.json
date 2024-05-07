@@ -1,6 +1,6 @@
 {
   "name": "bugtracker-api",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "API for BugTracker app",
   "private": "true",
   "scripts": {
@@ -21,6 +21,7 @@
     "connect-mongo": "^5.1.0",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "express-validator": "^7.0.1",
     "mongoose": "^8.3.2",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",

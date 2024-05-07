@@ -15,17 +15,11 @@ const UserSchema = new mongoose.Schema(
   },
   {
     collection: 'users',
-    virtuals: {
-      url: {
-        get() {
-          return `/users/${this.id}`;
-        }
-      }
-    },
     methods: {
       normalize() {
         return {
           id: this.id as string,
+          url: `/users/${this.username.toLowerCase()}`,
           username: this.username,
           email: this.email,
           role: this.role,
