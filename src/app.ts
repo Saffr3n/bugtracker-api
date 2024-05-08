@@ -19,8 +19,9 @@ mongoose.connect(dbUri, { dbName }).catch(console.error);
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
+    const usernameRegex = new RegExp(username, 'i');
     const user = await User.findOne({
-      $or: [{ username: username }, { email: username }]
+      $or: [{ username: usernameRegex }, { email: usernameRegex }]
     })
       .exec()
       .catch((err) => new SystemError(err));
