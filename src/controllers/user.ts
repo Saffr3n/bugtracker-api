@@ -40,6 +40,7 @@ export const createUser = [
     .bail({ level: 'request' }),
   body('email')
     .trim()
+    .toLowerCase()
     .notEmpty()
     .withMessage((_, { req }) => {
       req.err = new validationErrors.EmailRequired();
