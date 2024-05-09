@@ -47,6 +47,28 @@ export class PathNotFoundError extends ApiError {
   }
 }
 
+export class LoginError extends ApiError {
+  public override readonly type: string = '/errors/login';
+  public override readonly status: number = 401;
+  public override readonly detail: string =
+    'Invalid username/email or password. Either they are misspelled or user with provided credentials does not exist. Please check correctness of your credentials and try again, or create a new account if it does not exist yet.';
+
+  public constructor() {
+    super('Login Error');
+  }
+}
+
+export class UnauthenticatedError extends ApiError {
+  public override readonly type: string = '/errors/unauthenticated';
+  public override readonly status: number = 401;
+  public override readonly detail: string =
+    'The requested path is only accessible to authenticated users. Please log in to continue.';
+
+  public constructor() {
+    super('Unauthenticated');
+  }
+}
+
 export abstract class ValidationError extends ApiError {
   public override readonly status: number = 400;
 
@@ -181,5 +203,7 @@ export const validationErrors = {
 export const clientErrors = {
   Internal: InternalServerError,
   PathNotFound: PathNotFoundError,
+  Login: LoginError,
+  Unauthenticated: UnauthenticatedError,
   ...validationErrors
 };

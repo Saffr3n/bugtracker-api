@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import logger from 'morgan';
 import SystemError, { clientErrors } from './utils/errors';
 import User from './models/user';
+import sessionRouter from './routes/session';
 import userRouter from './routes/user';
 
 const app = express();
@@ -84,6 +85,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/session', sessionRouter);
 app.use('/users', userRouter);
 
 app.get('/errors/:name', (req, res, next) => {
