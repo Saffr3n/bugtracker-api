@@ -32,9 +32,11 @@ export const createUser = [
         .catch((err) => new SystemError(err));
 
       if (user instanceof SystemError) {
-        req.err = user;
-      } else if (user) {
-        req.err = new validationErrors.UsernameInUse();
+        throw (req.err = user);
+      }
+
+      if (user) {
+        throw (req.err = new validationErrors.UsernameInUse());
       }
     })
     .bail({ level: 'request' }),
@@ -57,9 +59,11 @@ export const createUser = [
         .catch((err) => new SystemError(err));
 
       if (user instanceof SystemError) {
-        req.err = user;
-      } else if (user) {
-        req.err = new validationErrors.EmailInUse();
+        throw (req.err = user);
+      }
+
+      if (user) {
+        throw (req.err = new validationErrors.EmailInUse());
       }
     })
     .bail({ level: 'request' }),
