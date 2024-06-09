@@ -2,208 +2,208 @@ import {
   USERNAME_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
   PASSWORD_MIN_LENGTH
-} from './constants';
+} from '../constants/validation';
 
-export abstract class ApiError extends Error implements ErrorResponse {
-  public abstract readonly type: string;
-  public abstract readonly status: number;
-  public readonly title: string;
-  public abstract readonly detail?: string;
-
-  public constructor(reason: string | Error) {
-    const message = reason instanceof Error ? reason.message : reason;
+export class ApiError extends Error {
+  public constructor(reason: any) {
+    const message = reason.message || reason;
     super(message);
-    this.title = message;
-    this.name = this.constructor.name;
+    this.name = reason.name || this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
-export default class SystemError extends ApiError {
-  public override readonly type: string = 'about:blank';
-  public override readonly status: number = 500;
-  public override readonly detail?: string;
-}
+export abstract class ClientError extends ApiError {
+  public abstract readonly status: number;
+  public readonly type: string;
+  public readonly title: string;
+  public readonly detail: string;
 
-export class InternalServerError extends ApiError {
-  public override readonly type: string = '/errors/internal';
-  public override readonly status: number = 500;
-  public override readonly detail: string =
-    'Oops! Something went wrong. Please try again later.';
-
-  public constructor() {
-    super('Internal Server Error');
-  }
-}
-
-export class PathNotFoundError extends ApiError {
-  public override readonly type: string = '/errors/path-not-found';
-  public override readonly status: number = 404;
-  public override readonly detail: string =
-    'The requested path could not be found. It either does not exist on the server or is misspelled. Please check the path correctness and try again.';
-
-  public constructor() {
-    super('Path Not Found');
-  }
-}
-
-export class LoginError extends ApiError {
-  public override readonly type: string = '/errors/login';
-  public override readonly status: number = 401;
-  public override readonly detail: string =
-    'Invalid username/email or password. Either they are misspelled or user with provided credentials does not exist. Please check correctness of your credentials and try again, or create a new account if it does not exist yet.';
-
-  public constructor() {
-    super('Login Error');
-  }
-}
-
-export class UnauthenticatedError extends ApiError {
-  public override readonly type: string = '/errors/unauthenticated';
-  public override readonly status: number = 401;
-  public override readonly detail: string =
-    'The requested path is only accessible to authenticated users. Please log in to continue.';
-
-  public constructor() {
-    super('Unauthenticated');
-  }
-}
-
-export abstract class ValidationError extends ApiError {
-  public override readonly status: number = 400;
-
-  public constructor(reason: string | Error) {
+  /**
+   * @param {boolean} [removeLastWord=false] - Indicates whether to remove the last word from the generated error title. The
+   *                                           error title is generated from the constructor name, which usually ends with the
+   *                                           word "Error". Sometimes it makes sense to remove this suffix for clarity. For
+   *                                           instance, "InternalServerError" might benefit from keeping the last word
+   *                                           (resulting in "Internal Server Error"), whereas "NotFoundError" might be clearer
+   *                                           without the "Error" suffix (resulting in "Not Found"). Default: `false`.
+   */
+  public constructor(reason: any, removeLastWord: boolean = false) {
     super(reason);
-    this.name = 'ValidationError';
+    const words = this.name.split(/([A-Z][a-z]+)/).filter(Boolean);
+    if (removeLastWord) words.splice(-1);
+    this.type = `/errors/${words.join('-').toLowerCase()}`;
+    this.title = words.join(' ');
+    this.detail = this.message;
   }
+
+  /** @param {boolean} [includeStack=false] - Default: `false` */
+  public toJson(includeStack: boolean = false): FailureResponseJson {
+    const { type, status, title, detail, stack } = this;
+    const json: FailureResponseJson = { type, status, title, detail };
+    if (includeStack) json.stack = stack;
+    return json;
+  }
+}
+
+export class InternalServerError extends ClientError {
+  public override readonly status: number = 500;
+
+  public constructor() {
+    super('Oops! Something went wrong. Please try again later.');
+  }
+}
+
+export class PathNotFoundError extends ClientError {
+  public override readonly status: number = 404;
+
+  public constructor() {
+    super(
+      'The requested path could not be found. It either does not exist on the server or is misspelled. Please check the path correctness and try again.',
+      true
+    );
+  }
+}
+
+export class LoginError extends ClientError {
+  public override readonly status: number = 401;
+
+  public constructor() {
+    super(
+      'Invalid username/email or password. Either they are misspelled or user with provided credentials does not exist. Please check correctness of your credentials and try again, or create a new account if it does not exist yet.'
+    );
+  }
+}
+
+export class UnauthenticatedError extends ClientError {
+  public override readonly status: number = 401;
+
+  public constructor() {
+    super(
+      'The requested path is only accessible to authenticated users. Please log in to continue.',
+      true
+    );
+  }
+}
+
+export abstract class ValidationError extends ClientError {
+  public override readonly status: number = 400;
 }
 
 export class UsernameRequiredError extends ValidationError {
-  public override readonly type: string = '/errors/username-required';
-  public override readonly detail: string =
-    'Username is required. It serves as a unique identifier in user profile URL, as a display name, and during login process. Please choose a username that represents you and is not already in use.';
-
   public constructor() {
-    super('Username Required');
+    super(
+      'Username is required. It serves as a unique identifier in user profile URL, as a display name, and during login process. Please choose a username that represents you and is not already in use.',
+      true
+    );
   }
 }
 
 export class UsernameLengthError extends ValidationError {
-  public override readonly type: string = '/errors/username-length';
-  public override readonly detail: string = `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters in length. Please choose a username within this limit.`;
-
   public constructor() {
-    super('Username Length Error');
+    super(
+      `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters in length. Please choose a username within this limit.`
+    );
   }
 }
 
 export class UsernameInvalidError extends ValidationError {
-  public override readonly type: string = '/errors/username-invalid';
-  public override readonly detail: string =
-    'Username must start with a letter and can contain only letters, numbers, and non-consecutive underscores, dashes, or dots.';
-
   public constructor() {
-    super('Username Invalid');
+    super(
+      'Username must start with a letter and end with a letter or a number. It can contain only letters, numbers, and non-consecutive underscores, dashes, or dots.',
+      true
+    );
   }
 }
 
-export class UsernameInUseError extends ValidationError {
-  public override readonly type: string = '/errors/username-in-use';
-  public override readonly detail: string =
-    'The provided username is already in use. Please choose a different username that has not been taken.';
-
+export class UsernameAlreadyInUseError extends ValidationError {
   public constructor() {
-    super('Username Already In Use');
+    super(
+      'The provided username is already in use. Please choose a different username that has not been taken.',
+      true
+    );
   }
 }
 
 export class EmailRequiredError extends ValidationError {
-  public override readonly type: string = '/errors/email-required';
-  public override readonly detail: string =
-    'Email is required solely for essential account-related communication, such as account recovery or the login process. Rest assured, it will not be shared with any third party.';
-
   public constructor() {
-    super('Email Required');
+    super(
+      'Email is required solely for essential account-related communication, such as account recovery or login process. Rest assured, it will not be shared with any third party.',
+      true
+    );
   }
 }
 
 export class EmailInvalidError extends ValidationError {
-  public override readonly type: string = '/errors/email-invalid';
-  public override readonly detail: string =
-    'The provided email address is invalid. Please make sure the email address follows the standard email format (e.g., example@example.com).';
-
   public constructor() {
-    super('Email Invalid');
+    super(
+      'The provided email address is invalid. Please make sure the email address follows the standard email format (e.g., example@example.com).',
+      true
+    );
   }
 }
 
-export class EmailInUseError extends ValidationError {
-  public override readonly type: string = '/errors/email-in-use';
-  public override readonly detail: string =
-    'The provided email address is already in use. Please use a different email address or try to recover your account if you have forgotten your credentials.';
-
+export class EmailAlreadyInUseError extends ValidationError {
   public constructor() {
-    super('Email Already In Use');
+    super(
+      'The provided email address is already in use. Please use a different email address or try to recover your account if you have forgotten your credentials.',
+      true
+    );
   }
 }
 
 export class PasswordRequiredError extends ValidationError {
-  public override readonly type: string = '/errors/password-required';
-  public override readonly detail: string =
-    'Password is required for account security. It is essential for preforming account-related actions. Please provide a password to continue.';
-
   public constructor() {
-    super('Password Required');
+    super(
+      'Password is required for account security. It is essential for preforming account-related actions. Please provide a password to continue.',
+      true
+    );
   }
 }
 
 export class PasswordTooShortError extends ValidationError {
-  public override readonly type: string = '/errors/password-too-short';
-  public override readonly detail: string = `Password must be at least ${PASSWORD_MIN_LENGTH} characters in length. Please choose a longer password for better security.`;
-
   public constructor() {
-    super('Password Too Short');
+    super(
+      `Password must be at least ${PASSWORD_MIN_LENGTH} characters in length. Please choose a longer password for better security.`,
+      true
+    );
   }
 }
 
 export class PasswordInvalidError extends ValidationError {
-  public override readonly type: string = '/errors/password-invalid';
-  public override readonly detail: string =
-    'Password must contain at least one uppercase letter, one lowercase letter, and one digit.';
-
   public constructor() {
-    super('Password Invalid');
+    super(
+      'Password must contain at least one uppercase letter, one lowercase letter, and one digit.',
+      true
+    );
   }
 }
 
 export class PasswordConfirmationError extends ValidationError {
-  public override readonly type: string = '/errors/password-confirmation';
-  public override readonly detail: string =
-    'Password does not match the confirmation field. Please ensure they are identical.';
-
   public constructor() {
-    super('Password Confirmation Error');
+    super(
+      'Password does not match the confirmation field. Please ensure they are identical.'
+    );
   }
 }
 
 export const validationErrors = {
-  UsernameRequired: UsernameRequiredError,
-  UsernameLength: UsernameLengthError,
-  UsernameInvalid: UsernameInvalidError,
-  UsernameInUse: UsernameInUseError,
-  EmailRequired: EmailRequiredError,
-  EmailInvalid: EmailInvalidError,
-  EmailInUse: EmailInUseError,
-  PasswordRequired: PasswordRequiredError,
-  PasswordTooShort: PasswordTooShortError,
-  PasswordInvalid: PasswordInvalidError,
-  PasswordConfirmation: PasswordConfirmationError
+  UsernameRequiredError,
+  UsernameLengthError,
+  UsernameInvalidError,
+  UsernameAlreadyInUseError,
+  EmailRequiredError,
+  EmailInvalidError,
+  EmailAlreadyInUseError,
+  PasswordRequiredError,
+  PasswordTooShortError,
+  PasswordInvalidError,
+  PasswordConfirmationError
 };
 
 export const clientErrors = {
-  Internal: InternalServerError,
-  PathNotFound: PathNotFoundError,
-  Login: LoginError,
-  Unauthenticated: UnauthenticatedError,
+  InternalServerError,
+  PathNotFoundError,
+  LoginError,
+  UnauthenticatedError,
   ...validationErrors
 };

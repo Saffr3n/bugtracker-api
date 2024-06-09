@@ -1,46 +1,47 @@
 import mongoose from 'mongoose';
 
-const userRoles = ['Admin', 'Project Manager', 'Developer', 'User'] as const;
+export const USER_ROLES = [
+  'Admin',
+  'Project Manager',
+  'Developer',
+  'User'
+] as const;
 
-type UserRole = (typeof userRoles)[number];
+type UserRole = (typeof USER_ROLES)[number];
 
-interface User {
-  readonly username: string;
-  readonly email: string;
-  readonly hash: string;
-  readonly role: UserRole;
-  readonly registerDate: Date;
-  readonly avatarUrl?: string;
-  normalize(): UserNormalized;
+interface UserCommon {
+  username: string;
+  email: string;
+  role: UserRole;
+  registerDate: string | Date;
+  avatarUrl?: string;
 }
 
-interface UserNormalized {
-  readonly id: string;
-  readonly url: string;
-  readonly username: string;
-  readonly email: string;
-  readonly role: UserRole;
-  readonly registerDate: string;
-  readonly avatarUrl?: string;
+interface UserJson extends UserCommon {
+  id: string;
+  url: string;
+  registerDate: string;
 }
 
-const UserSchema = new mongoose.Schema<User>(
+interface UserRaw extends UserCommon {
+  hash: string;
+  registerDate: Date;
+  toJson(): UserJson;
+}
+
+const UserSchema = new mongoose.Schema<UserRaw>(
   {
     username: { type: String, required: true },
     email: { type: String, required: true },
     hash: { type: String, required: true },
-    role: {
-      type: String,
-      enum: userRoles,
-      default: 'User'
-    },
+    role: { type: String, enum: USER_ROLES, default: 'User' },
     registerDate: { type: Date, default: new Date() },
     avatarUrl: { type: String, required: false }
   },
   {
     collection: 'users',
     methods: {
-      normalize(): UserNormalized {
+      toJson(): UserJson {
         return {
           id: this.id as string,
           url: `/users/${this.username.toLowerCase()}`,
@@ -55,6 +56,18 @@ const UserSchema = new mongoose.Schema<User>(
   }
 );
 
-const User = mongoose.model('User', UserSchema);
+export type UserDocument = Omit<
+  mongoose.HydratedDocumentFromSchema<typeof UserSchema>,
+  'toJSON'
+>;
 
-export default User;
+type UserModel = mongoose.Model<
+  UserRaw,
+  {},
+  {},
+  {},
+  UserDocument,
+  typeof UserSchema
+>;
+
+export default mongoose.model('User', UserSchema) as UserModel;

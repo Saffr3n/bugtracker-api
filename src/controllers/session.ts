@@ -1,47 +1,30 @@
 import passport from 'passport';
-import { LoginError, UnauthenticatedError } from '../utils/errors';
+import authenticate from '../middlewares/authenticate';
+import { LoginError, type ApiError } from '../utils/errors';
+import type { Request, Response, NextFunction } from 'express';
 
-export function login(req: Req, res: Res, next: Next) {
-  passport.authenticate('local', (err: Err, user: Express.User) => {
-    if (err) {
-      return next(err);
-    }
+export const login = [
+  (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('local', (err?: ApiError, user?: UserDocument) => {
+      if (err) return next(err);
+      if (!user) return next(new LoginError());
+      res.locals.user = user;
+      next();
+    })(req, res, next);
+  },
+  authenticate()
+];
 
-    if (!user) {
-      return next(new LoginError());
-    }
+export const logout = (req: Request, res: Response, next: NextFunction) => {
+  req.logout((err?: ApiError) => {
+    if (err) return next(err);
 
-    req.login(user, (err) => {
-      if (err) {
-        return next(err);
-      }
-
-      res.status(200).json({
-        status: res.statusCode,
-        title: 'Logged In',
-        detail: `User ${user.username} with id ${user.id} was successfully logged in.`,
-        user: user.normalize()
-      } as DataResponse);
-    });
-  })(req, res, next);
-}
-
-export function logout(req: Req, res: Res, next: Next) {
-  if (!req.user) {
-    return next(new UnauthenticatedError());
-  }
-
-  const { username, id } = req.user;
-
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-
-    res.status(200).json({
-      status: res.statusCode,
+    const json: SuccessResponseJson = {
+      status: 200,
       title: 'Logged Out',
-      detail: `User ${username} with id ${id} was successfully logged out.`
-    } as DataResponse);
+      detail: `User was successfully logged out.`
+    };
+
+    res.status(json.status).json(json);
   });
-}
+};

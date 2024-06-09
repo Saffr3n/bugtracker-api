@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import express from 'express';
 import { login, logout } from '../controllers/session';
 
-const sessionRouter = Router();
+const sessionRouter = express.Router();
 
 sessionRouter.post('/', login);
 sessionRouter.delete('/', logout);
