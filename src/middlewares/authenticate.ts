@@ -1,6 +1,7 @@
 import { ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
+/** @param {boolean} [isNewUser=false] - Default `false` */
 export default (isNewUser: boolean = false) =>
   (req: Request, res: Response, next: NextFunction) => {
     const { user } = res.locals;
