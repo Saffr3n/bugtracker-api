@@ -1,6 +1,12 @@
-import type { HydratedDocumentFromSchema } from 'mongoose';
+import type { MongoClient } from 'mongodb';
 import type { UserDocument as UserDoc } from './models/user';
 import type { ApiError } from './utils/errors';
+
+interface ApiResponseJson {
+  status: number;
+  title: string;
+  detail: string;
+}
 
 declare global {
   interface FailureResponseJson extends ApiResponseJson {
@@ -27,8 +33,8 @@ declare global {
   }
 }
 
-interface ApiResponseJson {
-  status: number;
-  title: string;
-  detail: string;
+declare module 'mongoose' {
+  interface Connection {
+    getClient(): MongoClient;
+  }
 }
