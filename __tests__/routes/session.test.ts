@@ -9,7 +9,7 @@ describe('session router', () => {
   beforeAll(() => {
     mockMongoStore();
     mockUserModel();
-    app = require('../src/configs/app').default;
+    app = require('../../src/configs/app').default;
   });
 
   describe('POST /session (login)', () => {
