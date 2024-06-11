@@ -1,6 +1,6 @@
 import request from 'supertest';
-import mockMongoStore from './__mocks__/mongo-store';
-import mockUserModel from './__mocks__/user-model';
+import mockMongoStore from '../__mocks__/mongo-store';
+import mockUserModel from '../__mocks__/user-model';
 import type { Application } from 'express';
 
 describe('user router', () => {
