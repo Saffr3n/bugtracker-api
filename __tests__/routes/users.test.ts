@@ -1,17 +1,10 @@
 import request from 'supertest';
-import mockMongoStore from '../__mocks__/mongo-store';
+import app from '../__mocks__/app';
 import mockUserModel from '../__mocks__/user-model';
-import type { Application } from 'express';
+
+mockUserModel();
 
 describe('user router', () => {
-  let app: Application;
-
-  beforeAll(() => {
-    mockMongoStore();
-    mockUserModel();
-    app = require('../../src/configs/app').default;
-  });
-
   describe('POST /users (create user)', () => {
     it('does not create user without username', (done) => {
       request(app)
