@@ -1,7 +1,10 @@
 import {
   USERNAME_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH
+  PASSWORD_MIN_LENGTH,
+  TITLE_MIN_LENGTH,
+  TITLE_MAX_LENGTH,
+  DESCRIPTION_MAX_LENGTH
 } from '../constants/validation';
 
 export class ApiError extends Error {
@@ -20,12 +23,12 @@ export abstract class ClientError extends ApiError {
   public readonly detail: string;
 
   /**
-   * @param {boolean} [removeLastWord=false] - Indicates whether to remove the last word from the generated error title. The
-   *                                           error title is generated from the constructor name, which usually ends with the
-   *                                           word "Error". Sometimes it makes sense to remove this suffix for clarity. For
-   *                                           instance, "InternalServerError" might benefit from keeping the last word
-   *                                           (resulting in "Internal Server Error"), whereas "NotFoundError" might be clearer
-   *                                           without the "Error" suffix (resulting in "Not Found"). Default: `false`.
+   * @param [removeLastWord=false] - Indicates whether to remove the last word from the generated error title. The
+   *                                 error title is generated from the constructor name, which usually ends with the
+   *                                 word "Error". Sometimes it makes sense to remove this suffix for clarity. For
+   *                                 instance, "InternalServerError" might benefit from keeping the last word
+   *                                 (resulting in "Internal Server Error"), whereas "NotFoundError" might be clearer
+   *                                 without the "Error" suffix (resulting in "Not Found"). Default: `false`.
    */
   public constructor(reason: any, removeLastWord: boolean = false) {
     super(reason);
@@ -36,7 +39,7 @@ export abstract class ClientError extends ApiError {
     this.detail = this.message;
   }
 
-  /** @param {boolean} [includeStack=false] - Default: `false` */
+  /** @param [includeStack=false] - Default: `false` */
   public toJson(includeStack: boolean = false): FailureResponseJson {
     const { type, status, title, detail, stack } = this;
     const json: FailureResponseJson = { type, status, title, detail };
@@ -64,12 +67,13 @@ export class PathNotFoundError extends ClientError {
   }
 }
 
-export class LoginError extends ClientError {
-  public override readonly status: number = 401;
+export class AccessDeniedError extends ClientError {
+  public override readonly status: number = 403;
 
   public constructor() {
     super(
-      'Invalid username/email or password. Either they are misspelled or user with provided credentials does not exist. Please check correctness of your credentials and try again, or create a new account if it does not exist yet.'
+      'Not enough privileges to access the requested path. Please contact your supervisor or administrator to elevate your user role.',
+      true
     );
   }
 }
@@ -81,6 +85,16 @@ export class UnauthenticatedError extends ClientError {
     super(
       'The requested path is only accessible to authenticated users. Please log in to continue.',
       true
+    );
+  }
+}
+
+export class LoginError extends ClientError {
+  public override readonly status: number = 401;
+
+  public constructor() {
+    super(
+      'Invalid username/email or password. Either they are misspelled or user with provided credentials does not exist. Please check correctness of your credentials and try again, or create a new account if it does not exist yet.'
     );
   }
 }
@@ -109,7 +123,7 @@ export class UsernameLengthError extends ValidationError {
 export class UsernameInvalidError extends ValidationError {
   public constructor() {
     super(
-      'Username must start with a letter and end with a letter or a number. It can contain only letters, numbers, and non-consecutive underscores, dashes, or dots.',
+      'Username can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a username within this limit.',
       true
     );
   }
@@ -186,6 +200,50 @@ export class PasswordConfirmationError extends ValidationError {
   }
 }
 
+export class TitleRequiredError extends ValidationError {
+  public constructor() {
+    super(
+      'Document title is required. Please choose a descriptive title that represents your document the most.',
+      true
+    );
+  }
+}
+
+export class TitleLengthError extends ValidationError {
+  public constructor() {
+    super(
+      `Document title must be between ${TITLE_MIN_LENGTH} and ${TITLE_MAX_LENGTH} characters in length. Please choose a document title within this limit.`
+    );
+  }
+}
+
+export class TitleInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      'Document title can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a document title within this limit.',
+      true
+    );
+  }
+}
+
+export class ProjectTitleAlreadyInUseError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided project title is already in use. Please choose a different project title that has not been taken.',
+      true
+    );
+  }
+}
+
+export class DescriptionTooLongError extends ValidationError {
+  public constructor() {
+    super(
+      `Document description must be at most ${DESCRIPTION_MAX_LENGTH} characters in length. Please provide a shorter document description.`,
+      true
+    );
+  }
+}
+
 export const validationErrors = {
   UsernameRequiredError,
   UsernameLengthError,
@@ -197,13 +255,19 @@ export const validationErrors = {
   PasswordRequiredError,
   PasswordTooShortError,
   PasswordInvalidError,
-  PasswordConfirmationError
+  PasswordConfirmationError,
+  TitleRequiredError,
+  TitleLengthError,
+  TitleInvalidError,
+  ProjectTitleAlreadyInUseError,
+  DescriptionTooLongError
 };
 
 export const clientErrors = {
   InternalServerError,
   PathNotFoundError,
-  LoginError,
+  AccessDeniedError,
   UnauthenticatedError,
+  LoginError,
   ...validationErrors
 };

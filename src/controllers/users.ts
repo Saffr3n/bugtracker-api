@@ -1,4 +1,4 @@
-import { createUser } from '../services/users';
+import { create } from '../services/users';
 import {
   validateUsername,
   validateEmail,
@@ -8,7 +8,7 @@ import authenticate from '../middlewares/authenticate';
 import { ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
-export const register = [
+export const createUser = [
   validateUsername(),
   validateEmail(),
   validatePassword(),
@@ -17,7 +17,7 @@ export const register = [
     try {
       const err = req.error;
       if (err) return next(err);
-      const user = await createUser(req.body);
+      const user = await create(req.body);
       res.locals.user = user;
       next();
     } catch (err) {

@@ -1,21 +1,29 @@
 import mongoose from 'mongoose';
+import { documentRefToJson } from '../utils';
+import type { DocumentCommon, DocumentJson, DocumentRaw } from '../globals';
 
-interface ProjectCommon {
+interface ProjectCommon extends DocumentCommon {
   title: string;
   description?: string;
-  manager: mongoose.Types.ObjectId;
-  developers: mongoose.Types.ObjectId[];
-  users: mongoose.Types.ObjectId[];
+  manager: string | mongoose.Types.ObjectId | UserJson | UserDocument;
+  developers: (string | mongoose.Types.ObjectId | UserJson | UserDocument)[];
+  users: (string | mongoose.Types.ObjectId | UserJson | UserDocument)[];
   createDate: string | Date;
 }
 
-interface ProjectJson extends ProjectCommon {
+interface ProjectJson extends ProjectCommon, DocumentJson {
   id: string;
   url: string;
+  manager: string | UserJson;
+  developers: (string | UserJson)[];
+  users: (string | UserJson)[];
   createDate: string;
 }
 
-interface ProjectRaw extends ProjectCommon {
+interface ProjectRaw extends ProjectCommon, DocumentRaw {
+  manager: mongoose.Types.ObjectId | UserDocument;
+  developers: (mongoose.Types.ObjectId | UserDocument)[];
+  users: (mongoose.Types.ObjectId | UserDocument)[];
   createDate: Date;
   toJson(): ProjectJson;
 }
@@ -38,9 +46,9 @@ const ProjectSchema = new mongoose.Schema<ProjectRaw>(
           url: `/projects/${this.title.toLowerCase().replaceAll(' ', '+')}`,
           title: this.title,
           description: this.description,
-          manager: this.manager,
-          developers: this.developers,
-          users: this.users,
+          manager: documentRefToJson(this.manager),
+          developers: documentRefToJson(this.developers),
+          users: documentRefToJson(this.users),
           createDate: this.createDate.toISOString()
         };
       }

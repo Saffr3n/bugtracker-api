@@ -7,7 +7,7 @@ import { NODE_ENV } from '../constants/env';
 import type { Request, Response, NextFunction } from 'express';
 
 const isClientError = (err: ApiError): err is ClientError => {
-  return (err as ClientError).type !== undefined;
+  return !!(err as ClientError).type;
 };
 
 export default (

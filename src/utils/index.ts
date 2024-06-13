@@ -1,9 +1,12 @@
+import type { Types } from 'mongoose';
+import type { Document } from '../globals';
+
 /**
- * @param {boolean} [strict=true] - When set to `true` (default), the generated regular expression will match the
- *                                  input string exactly, ensuring that the entire string is matched from start to
- *                                  finish. When set to `false`, the generated regular expression will allow partial
- *                                  matches, meaning the input string can appear anywhere within the text being
- *                                  searched. Default `true`.
+ * @param [strict=true] - When set to `true` (default), the generated regular expression will match the
+ *                        input string exactly, ensuring that the entire string is matched from start to
+ *                        finish. When set to `false`, the generated regular expression will allow partial
+ *                        matches, meaning the input string can appear anywhere within the text being
+ *                        searched. Default `true`.
  */
 export const stringToCaseInsensitiveRegex = (
   string: string,
@@ -12,3 +15,35 @@ export const stringToCaseInsensitiveRegex = (
   if (strict) string = `^${string}$`;
   return new RegExp(string, 'i');
 };
+
+export function isDocumentRefPopulated<T extends Document>(
+  field: Types.ObjectId | T
+): field is T;
+export function isDocumentRefPopulated<T extends Document>(
+  field: (Types.ObjectId | T)[]
+): field is T[];
+export function isDocumentRefPopulated<T extends Document>(
+  field: Types.ObjectId | T | (Types.ObjectId | T)[]
+) {
+  const isArr = Array.isArray(field);
+  const isUserDocArr = isArr && !!(field[0] as T)?.toJson;
+  const isUserDoc = !!(field as T).toJson;
+  return isUserDoc || isUserDocArr;
+}
+
+export function documentRefToJson<T extends Document>(
+  field: Types.ObjectId | T
+): string | ReturnType<T['toJson']>;
+export function documentRefToJson<T extends Document>(
+  field: (Types.ObjectId | T)[]
+): (string | ReturnType<T['toJson']>)[];
+export function documentRefToJson<T extends Document>(
+  field: Types.ObjectId | T | (Types.ObjectId | T)[]
+) {
+  if (Array.isArray(field)) {
+    return isDocumentRefPopulated(field)
+      ? field.map((item) => item.toJson())
+      : field.map((item) => item.toString());
+  }
+  return isDocumentRefPopulated(field) ? field.toJson() : field.toString();
+}

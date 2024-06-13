@@ -1,7 +1,7 @@
 import { ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
-/** @param {boolean} [isNewUser=false] - Default `false` */
+/** @param [isNewUser=false] - Default `false` */
 export default (isNewUser: boolean = false) =>
   (req: Request, res: Response, next: NextFunction) => {
     const { user } = res.locals;
@@ -21,7 +21,7 @@ export default (isNewUser: boolean = false) =>
         status: 200,
         title: isNewUser ? 'Registered' : 'Logged In',
         detail: `User ${user.username} with id ${user.id} was successfully ${
-          isNewUser ? 'registered and ' : ''
+          isNewUser ? 'created and ' : ''
         }logged in.`,
         data: user.toJson()
       };

@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { getUserByUsername, getUserByEmail } from '../services/users';
+import { getByUsername, getByEmail } from '../services/users';
 import {
   ApiError,
   UsernameRequiredError,
@@ -17,7 +17,9 @@ import {
 import {
   USERNAME_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH
+  USERNAME_PATTERN,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_PATTERN
 } from '../constants/validation';
 
 export const validateUsername = () =>
@@ -29,21 +31,19 @@ export const validateUsername = () =>
     .isLength({ min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH })
     .withMessage((_, { req }) => (req.error = new UsernameLengthError()))
     .bail({ level: 'request' })
-    .matches(/(?!.*[._-]{2,})(?!.*[._-]$)^[a-z][\w.-]*$/i)
+    .matches(USERNAME_PATTERN)
     .withMessage((_, { req }) => (req.error = new UsernameInvalidError()))
     .bail({ level: 'request' })
     .custom(async (username, { req }) => {
       let user: UserDocument | null;
 
       try {
-        user = await getUserByUsername(username);
+        user = await getByUsername(username);
       } catch (err) {
         throw (req.error = new ApiError(err));
       }
 
-      if (user) {
-        throw (req.error = new UsernameAlreadyInUseError());
-      }
+      if (user) throw (req.error = new UsernameAlreadyInUseError());
     })
     .bail({ level: 'request' });
 
@@ -61,14 +61,12 @@ export const validateEmail = () =>
       let user: UserDocument | null;
 
       try {
-        user = await getUserByEmail(email);
+        user = await getByEmail(email);
       } catch (err) {
         throw (req.error = new ApiError(err));
       }
 
-      if (user) {
-        throw (req.error = new EmailAlreadyInUseError());
-      }
+      if (user) throw (req.error = new EmailAlreadyInUseError());
     })
     .bail({ level: 'request' });
 
@@ -81,12 +79,11 @@ export const validatePassword = () =>
     .isLength({ min: PASSWORD_MIN_LENGTH })
     .withMessage((_, { req }) => (req.error = new PasswordTooShortError()))
     .bail({ level: 'request' })
-    .matches(/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)^.*$/)
+    .matches(PASSWORD_PATTERN)
     .withMessage((_, { req }) => (req.error = new PasswordInvalidError()))
     .bail({ level: 'request' })
     .custom((password, { req }) => {
-      if (password !== req.body.confirm) {
-        throw (req.error = new PasswordConfirmationError());
-      }
+      const isConfirmed = password === req.body.confirm;
+      if (!isConfirmed) throw (req.error = new PasswordConfirmationError());
     })
     .bail({ level: 'request' });

@@ -1,31 +1,24 @@
 import mongoose from 'mongoose';
+import { USER_ROLES } from '../constants/validation';
+import type { DocumentCommon, DocumentJson, DocumentRaw } from '../globals';
 
-export const USER_ROLES = [
-  'Admin',
-  'Project Manager',
-  'Developer',
-  'User'
-] as const;
-
-type UserRole = (typeof USER_ROLES)[number];
-
-interface UserCommon {
+interface UserCommon extends DocumentCommon {
   username: string;
   email: string;
   role: UserRole;
-  registerDate: string | Date;
+  createDate: string | Date;
   avatarUrl?: string;
 }
 
-interface UserJson extends UserCommon {
+interface UserJson extends UserCommon, DocumentJson {
   id: string;
   url: string;
-  registerDate: string;
+  createDate: string;
 }
 
-interface UserRaw extends UserCommon {
+interface UserRaw extends UserCommon, DocumentRaw {
   hash: string;
-  registerDate: Date;
+  createDate: Date;
   toJson(): UserJson;
 }
 
@@ -35,7 +28,7 @@ const UserSchema = new mongoose.Schema<UserRaw>(
     email: { type: String, required: true },
     hash: { type: String, required: true },
     role: { type: String, enum: USER_ROLES, default: 'User' },
-    registerDate: { type: Date, default: new Date() },
+    createDate: { type: Date, default: new Date() },
     avatarUrl: { type: String, required: false }
   },
   {
@@ -44,11 +37,11 @@ const UserSchema = new mongoose.Schema<UserRaw>(
       toJson(): UserJson {
         return {
           id: this.id as string,
-          url: `/users/${this.username.toLowerCase()}`,
+          url: `/users/${this.username.toLowerCase().replaceAll(' ', '+')}`,
           username: this.username,
           email: this.email,
           role: this.role,
-          registerDate: this.registerDate.toISOString(),
+          createDate: this.createDate.toISOString(),
           avatarUrl: this.avatarUrl
         };
       }
