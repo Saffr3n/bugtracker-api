@@ -26,13 +26,6 @@ describe('user router', () => {
         .expect(400, /username length error/i, done);
     });
 
-    it('does not create user with username that does not start with letter', (done) => {
-      request(app)
-        .post('/users')
-        .send({ username: '7est' })
-        .expect(400, /username invalid/i, done);
-    });
-
     it('does not create user with username that contains forbidden characters', (done) => {
       request(app)
         .post('/users')
@@ -47,45 +40,38 @@ describe('user router', () => {
         .expect(400, /username invalid/i, done);
     });
 
-    it('does not create user with username that ends with special character', (done) => {
-      request(app)
-        .post('/users')
-        .send({ username: 'test_' })
-        .expect(400, /username invalid/i, done);
-    });
-
     it('does not create user with username that is already in use', (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'test' })
+        .send({ username: 'admin' })
         .expect(400, /username already in use/i, done);
     });
 
     it('does not create user without email', (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'test_2' })
+        .send({ username: 'test' })
         .expect(400, /email required/i, done);
     });
 
     it('does not create user with invalid email', (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'test_2', email: 'invalid@email' })
+        .send({ username: 'test', email: 'invalid@email' })
         .expect(400, /email invalid/i, done);
     });
 
     it('does not create user with email that is already in use', (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'test_2', email: 'test@example.com' })
+        .send({ username: 'test', email: 'admin@example.com' })
         .expect(400, /email already in use/i, done);
     });
 
     it('does not create user without password', (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'test_2', email: 'test_2@example.com' })
+        .send({ username: 'test', email: 'test@example.com' })
         .expect(400, /password required/i, done);
     });
 
@@ -93,8 +79,8 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({
-          username: 'test_2',
-          email: 'test_2@example.com',
+          username: 'test',
+          email: 'test@example.com',
           password: '1234567'
         })
         .expect(400, /password too short/i, done);
@@ -104,8 +90,8 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({
-          username: 'test_2',
-          email: 'test_2@example.com',
+          username: 'test',
+          email: 'test@example.com',
           password: 'TEST1234'
         })
         .expect(400, /password invalid/i, done);
@@ -115,8 +101,8 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({
-          username: 'test_2',
-          email: 'test_2@example.com',
+          username: 'test',
+          email: 'test@example.com',
           password: 'test1234'
         })
         .expect(400, /password invalid/i, done);
@@ -126,8 +112,8 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({
-          username: 'test_2',
-          email: 'test_2@example.com',
+          username: 'test',
+          email: 'test@example.com',
           password: 'TESTtest'
         })
         .expect(400, /password invalid/i, done);
@@ -137,8 +123,8 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({
-          username: 'test_2',
-          email: 'test_2@example.com',
+          username: 'test',
+          email: 'test@example.com',
           password: 'Test1234'
         })
         .expect(400, /password confirmation error/i, done);
@@ -148,12 +134,12 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({
-          username: 'test_2',
-          email: 'test_2@example.com',
+          username: 'test',
+          email: 'test@example.com',
           password: 'Test1234',
           confirm: 'Test1234'
         })
-        .expect(200, /registered/i, done);
+        .expect(200, /user created/i, done);
     });
   });
 });

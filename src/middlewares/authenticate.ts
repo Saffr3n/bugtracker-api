@@ -19,7 +19,7 @@ export default (isNewUser: boolean = false) =>
 
       const json: SuccessResponseJson = {
         status: 200,
-        title: isNewUser ? 'Registered' : 'Logged In',
+        title: isNewUser ? 'User Created' : 'Logged In',
         detail: `User ${user.username} with id ${user.id} was successfully ${
           isNewUser ? 'created and ' : ''
         }logged in.`,

@@ -16,7 +16,7 @@ describe('session router', () => {
     it('logs in existent user', (done) => {
       request(app)
         .post('/session')
-        .send({ username: 'test', password: 'Test1234' })
+        .send({ username: 'admin', password: 'Test1234' })
         .expect(200, /logged in/i, done);
     });
   });
@@ -25,7 +25,7 @@ describe('session router', () => {
     it('logs out user with active session', (done) => {
       request(app)
         .post('/session')
-        .send({ username: 'test', password: 'Test1234' })
+        .send({ username: 'admin', password: 'Test1234' })
         .then((res) => {
           const cookie = res.headers['set-cookie'] || '';
           request(app)
