@@ -1,6 +1,12 @@
 import request from 'supertest';
 import app from '../__mocks__/app';
 import mockUserModel from '../__mocks__/user-model';
+import { createStringOfLength } from '../__utils__';
+import {
+  USERNAME_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH
+} from '../../src/constants/validation';
 
 mockUserModel();
 
@@ -12,17 +18,17 @@ describe('user router', () => {
         .expect(400, /username required/i, done);
     });
 
-    it('does not create user with username shorter than 3 characters', (done) => {
+    it(`does not create user with username shorter than ${USERNAME_MIN_LENGTH} characters`, (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'ab' })
+        .send({ username: createStringOfLength(USERNAME_MIN_LENGTH - 1) })
         .expect(400, /username length error/i, done);
     });
 
-    it('does not create user with username longer than 24 characters', (done) => {
+    it(`does not create user with username longer than ${USERNAME_MAX_LENGTH} characters`, (done) => {
       request(app)
         .post('/users')
-        .send({ username: 'abcdefghijklmnopqrstuvwxyz' })
+        .send({ username: createStringOfLength(USERNAME_MAX_LENGTH + 1) })
         .expect(400, /username length error/i, done);
     });
 
@@ -75,13 +81,13 @@ describe('user router', () => {
         .expect(400, /password required/i, done);
     });
 
-    it('does not create user with password shorter than 8 characters', (done) => {
+    it(`does not create user with password shorter than ${PASSWORD_MIN_LENGTH} characters`, (done) => {
       request(app)
         .post('/users')
         .send({
           username: 'test',
           email: 'test@example.com',
-          password: '1234567'
+          password: createStringOfLength(PASSWORD_MIN_LENGTH - 1)
         })
         .expect(400, /password too short/i, done);
     });

@@ -29,8 +29,8 @@ describe('documentRefToJson utility function', () => {
   });
 
   it('returns ref id string array for array fields that are not populated', () => {
-    const proj = new Project({ users: [user1.id, user2.id] });
-    const json = documentRefToJson(proj.users);
+    const proj = new Project({ developers: [user1.id, user2.id] });
+    const json = documentRefToJson(proj.developers);
     expect(json).toEqual([user1.id, user2.id]);
   });
 
@@ -42,9 +42,9 @@ describe('documentRefToJson utility function', () => {
   });
 
   it('returns document json array for array fields that are populated', () => {
-    const proj = new Project({ users: [user1.id, user2.id] });
-    proj.users = [user1, user2];
-    const json = documentRefToJson(proj.users);
+    const proj = new Project({ developers: [user1.id, user2.id] });
+    proj.developers = [user1, user2];
+    const json = documentRefToJson(proj.developers);
     expect(json).toEqual([user1.toJson(), user2.toJson()]);
   });
 });

@@ -2,6 +2,12 @@ import request from 'supertest';
 import app from '../__mocks__/app';
 import mockUserModel from '../__mocks__/user-model';
 import mockProjectModel from '../__mocks__/project-model';
+import { createStringOfLength } from '../__utils__';
+import {
+  TITLE_MIN_LENGTH,
+  TITLE_MAX_LENGTH,
+  DETAIL_MAX_LENGTH
+} from '../../src/constants/validation';
 
 mockUserModel();
 mockProjectModel();
@@ -40,7 +46,7 @@ describe('projects router', () => {
         });
     });
 
-    it('does not create project with title shorter than 3 characters', (done) => {
+    it(`does not create project with title shorter than ${TITLE_MIN_LENGTH} characters`, (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
@@ -49,12 +55,12 @@ describe('projects router', () => {
           request(app)
             .post('/projects')
             .set('cookie', cookie)
-            .send({ title: 'ab' })
+            .send({ title: createStringOfLength(TITLE_MIN_LENGTH - 1) })
             .expect(400, /title length error/i, done);
         });
     });
 
-    it('does not create project with title longer than 24 characters', (done) => {
+    it(`does not create project with title longer than ${TITLE_MAX_LENGTH} characters`, (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
@@ -63,7 +69,7 @@ describe('projects router', () => {
           request(app)
             .post('/projects')
             .set('cookie', cookie)
-            .send({ title: 'abcdefghijklmnopqrstuvwxyz' })
+            .send({ title: createStringOfLength(TITLE_MAX_LENGTH + 1) })
             .expect(400, /title length error/i, done);
         });
     });
@@ -110,29 +116,7 @@ describe('projects router', () => {
         });
     });
 
-    it('does not create project with description longer than 1024 characters', (done) => {
-      const description = (() => {
-        let val = '';
-        for (let i = 0; i <= 1024; i++) {
-          val += 'a';
-        }
-        return val;
-      })();
-
-      request(app)
-        .post('/session')
-        .send({ username: 'admin', password: 'Test1234' })
-        .then((res) => {
-          const cookie = res.headers['set-cookie'] || '';
-          request(app)
-            .post('/projects')
-            .set('cookie', cookie)
-            .send({ title: 'Test Project 2', description })
-            .expect(400, /description too long/i, done);
-        });
-    });
-
-    it('creates project with description up to 1024 (inclusive) characters in length', (done) => {
+    it(`does not create project with detail longer than ${DETAIL_MAX_LENGTH} characters`, (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
@@ -143,13 +127,30 @@ describe('projects router', () => {
             .set('cookie', cookie)
             .send({
               title: 'Test Project 2',
-              description: 'Test description...'
+              detail: createStringOfLength(DETAIL_MAX_LENGTH + 1)
+            })
+            .expect(400, /detail too long/i, done);
+        });
+    });
+
+    it(`creates project with detail up to ${DETAIL_MAX_LENGTH} (inclusive) characters in length`, (done) => {
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .post('/projects')
+            .set('cookie', cookie)
+            .send({
+              title: 'Test Project 2',
+              detail: createStringOfLength(DETAIL_MAX_LENGTH)
             })
             .expect(200, /project created/i, done);
         });
     });
 
-    it('creates project without description', (done) => {
+    it('creates project without detail', (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
