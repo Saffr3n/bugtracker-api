@@ -7,23 +7,20 @@ interface ProjectCommon extends DocumentCommon {
   description?: string;
   manager: string | mongoose.Types.ObjectId | UserJson | UserDocument;
   developers: (string | mongoose.Types.ObjectId | UserJson | UserDocument)[];
-  users: (string | mongoose.Types.ObjectId | UserJson | UserDocument)[];
   createDate: string | Date;
 }
 
-interface ProjectJson extends ProjectCommon, DocumentJson {
+export interface ProjectJson extends ProjectCommon, DocumentJson {
   id: string;
   url: string;
   manager: string | UserJson;
   developers: (string | UserJson)[];
-  users: (string | UserJson)[];
   createDate: string;
 }
 
 interface ProjectRaw extends ProjectCommon, DocumentRaw {
   manager: mongoose.Types.ObjectId | UserDocument;
   developers: (mongoose.Types.ObjectId | UserDocument)[];
-  users: (mongoose.Types.ObjectId | UserDocument)[];
   createDate: Date;
   toJson(): ProjectJson;
 }
@@ -34,7 +31,6 @@ const ProjectSchema = new mongoose.Schema<ProjectRaw>(
     description: { type: String, required: false },
     manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     developers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     createDate: { type: Date, default: new Date() }
   },
   {
@@ -48,7 +44,6 @@ const ProjectSchema = new mongoose.Schema<ProjectRaw>(
           description: this.description,
           manager: documentRefToJson(this.manager),
           developers: documentRefToJson(this.developers),
-          users: documentRefToJson(this.users),
           createDate: this.createDate.toISOString()
         };
       }

@@ -17,3 +17,6 @@ export enum USER_ROLES {
   'Project Manager',
   'Admin'
 }
+
+export const TICKET_TYPES = ['Feature', 'Issue', 'Task', 'Help'] as const;
+export const TICKET_STATUSES = ['Open', 'Closed'] as const;

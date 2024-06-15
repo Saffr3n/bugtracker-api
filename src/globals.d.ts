@@ -1,9 +1,20 @@
 import type { Document as Doc } from 'mongoose';
 import type { MongoClient } from 'mongodb';
-import type { UserDocument as UserDoc } from './models/user';
-import type { ProjectDocument as ProjectDoc } from './models/project';
+import type { UserDocument as UDoc, UserJson as UJson } from './models/user';
+import type {
+  ProjectDocument as PDoc,
+  ProjectJson as PJson
+} from './models/project';
+import type {
+  TicketDocument as TDoc,
+  TicketJson as TJson
+} from './models/ticket';
 import type { ApiError } from './utils/errors';
-import { USER_ROLES } from './constants/validation';
+import {
+  USER_ROLES,
+  TICKET_TYPES,
+  TICKET_STATUSES
+} from './constants/validation';
 
 interface ApiResponseJson {
   status: number;
@@ -39,11 +50,16 @@ declare global {
   }
 
   type UserRole = keyof typeof USER_ROLES;
-  type UserDocument = UserDoc;
-  type UserJson = ReturnType<UserDocument['toJson']>;
+  type UserDocument = UDoc;
+  type UserJson = UJson;
 
-  type ProjectDocument = ProjectDoc;
-  type ProjectJson = ReturnType<ProjectDocument['toJson']>;
+  type ProjectDocument = PDoc;
+  type ProjectJson = PJson;
+
+  type TicketType = (typeof TICKET_TYPES)[number];
+  type TicketStatus = (typeof TICKET_STATUSES)[number];
+  type TicketDocument = TDoc;
+  type TicketJson = TJson;
 
   namespace Express {
     interface Request {
@@ -53,7 +69,7 @@ declare global {
     interface Locals {
       user?: UserDocument;
     }
-    
+
     interface User extends UserDocument {}
   }
 }

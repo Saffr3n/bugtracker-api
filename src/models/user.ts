@@ -10,7 +10,7 @@ interface UserCommon extends DocumentCommon {
   avatarUrl?: string;
 }
 
-interface UserJson extends UserCommon, DocumentJson {
+export interface UserJson extends UserCommon, DocumentJson {
   id: string;
   url: string;
   createDate: string;
