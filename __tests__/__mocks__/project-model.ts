@@ -2,6 +2,13 @@ import Project from '../../src/models/project';
 import mockDb from './db';
 
 export default () => {
+  jest.spyOn(Project, 'findById').mockImplementation((id) => {
+    return {
+      exec: () =>
+        Promise.resolve(mockDb.projects.find((proj) => proj.id === id))
+    } as any;
+  });
+
   jest.spyOn(Project, 'findOne').mockImplementation((filter) => {
     const { title } = filter!;
     const findCb = (project: ProjectDocument) => {

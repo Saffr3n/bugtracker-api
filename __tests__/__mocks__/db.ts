@@ -50,5 +50,7 @@ export default {
       description: 'Test description...',
       manager: admin.id
     })
-  ]
+  ],
+
+  tickets: [] as TicketDocument[]
 };
