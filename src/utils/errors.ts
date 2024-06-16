@@ -68,6 +68,17 @@ export class PathNotFoundError extends ClientError {
   }
 }
 
+export class DocumentNotFoundError extends ClientError {
+  public override readonly status: number = 404;
+
+  public constructor() {
+    super(
+      'The document with provided ID could not be found. It either does not exist or its ID is misspelled. Please check the document ID correctness and try again.',
+      true
+    );
+  }
+}
+
 export class AccessDeniedError extends ClientError {
   public override readonly status: number = 403;
 
@@ -308,6 +319,7 @@ export const validationErrors = {
 export const clientErrors = {
   InternalServerError,
   PathNotFoundError,
+  DocumentNotFoundError,
   AccessDeniedError,
   UnauthenticatedError,
   LoginError,

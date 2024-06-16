@@ -1,12 +1,15 @@
 import { body } from 'express-validator';
+import { getById } from '../services/projects';
 import {
+  ApiError,
   TicketTypeRequiredError,
   TicketTypeInvalidError,
   TitleRequiredError,
   TitleLengthError,
   DetailRequiredError,
   DetailTooLongError,
-  IDInvalidError
+  IDInvalidError,
+  DocumentNotFoundError
 } from '../utils/errors';
 import {
   TICKET_TYPES,
@@ -51,4 +54,16 @@ export const validateProject = () =>
     .trim()
     .isMongoId()
     .withMessage((_, { req }) => (req.error = new IDInvalidError()))
+    .bail({ level: 'request' })
+    .custom(async (id, { req }) => {
+      let project: ProjectDocument | null;
+
+      try {
+        project = await getById(id);
+      } catch (err) {
+        throw (req.error = new ApiError(err));
+      }
+
+      if (!project) throw (req.error = new DocumentNotFoundError());
+    })
     .bail({ level: 'request' });

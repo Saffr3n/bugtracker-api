@@ -11,3 +11,7 @@ export const getByTitle = (title: string) => {
   const regex = stringToCaseInsensitiveRegex(title);
   return Project.findOne({ title: regex }).exec();
 };
+
+export const getById = (id: string) => {
+  return Project.findById(id).exec();
+};
