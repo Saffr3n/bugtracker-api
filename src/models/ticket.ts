@@ -7,7 +7,7 @@ interface TicketCommon extends DocumentCommon {
   type: TicketType;
   status: TicketStatus;
   title: string;
-  description: string;
+  detail: string;
   project: string | mongoose.Types.ObjectId | ProjectJson | ProjectDocument;
   submitter: string | mongoose.Types.ObjectId | UserJson | UserDocument;
   developers: (string | mongoose.Types.ObjectId | UserJson | UserDocument)[];
@@ -36,7 +36,7 @@ const TicketSchema = new mongoose.Schema<TicketRaw>(
     type: { type: String, enum: TICKET_TYPES, required: true },
     status: { type: String, enum: TICKET_STATUSES, default: 'Open' },
     title: { type: String, required: true },
-    description: { type: String, required: true },
+    detail: { type: String, required: true },
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
     submitter: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     developers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -52,7 +52,7 @@ const TicketSchema = new mongoose.Schema<TicketRaw>(
           type: this.type,
           status: this.status,
           title: this.title,
-          description: this.description,
+          detail: this.detail,
           project: documentRefToJson(this.project),
           submitter: documentRefToJson(this.submitter),
           developers: documentRefToJson(this.developers),

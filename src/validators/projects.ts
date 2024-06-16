@@ -5,14 +5,14 @@ import {
   TitleRequiredError,
   TitleLengthError,
   TitleInvalidError,
-  ProjectTitleAlreadyInUseError,
-  DescriptionTooLongError
+  TitleAlreadyInUseError,
+  DetailTooLongError
 } from '../utils/errors';
 import {
   TITLE_MIN_LENGTH,
   TITLE_MAX_LENGTH,
   TITLE_PATTERN,
-  DESCRIPTION_MAX_LENGTH
+  DETAIL_MAX_LENGTH
 } from '../constants/validation';
 
 export const validateTitle = () =>
@@ -36,14 +36,14 @@ export const validateTitle = () =>
         throw (req.error = new ApiError(err));
       }
 
-      if (project) throw (req.error = new ProjectTitleAlreadyInUseError());
+      if (project) throw (req.error = new TitleAlreadyInUseError());
     })
     .bail({ level: 'request' });
 
-export const validateDescription = () =>
-  body('description')
+export const validateDetail = () =>
+  body('detail')
     .optional()
     .trim()
-    .isLength({ max: DESCRIPTION_MAX_LENGTH })
-    .withMessage((_, { req }) => (req.error = new DescriptionTooLongError()))
+    .isLength({ max: DETAIL_MAX_LENGTH })
+    .withMessage((_, { req }) => (req.error = new DetailTooLongError()))
     .bail({ level: 'request' });

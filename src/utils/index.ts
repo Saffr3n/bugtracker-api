@@ -26,9 +26,9 @@ export function isDocumentRefPopulated<T extends Document>(
   field: Types.ObjectId | T | (Types.ObjectId | T)[]
 ) {
   const isArr = Array.isArray(field);
-  const isUserDocArr = isArr && !!(field[0] as T)?.toJson;
-  const isUserDoc = !!(field as T).toJson;
-  return isUserDoc || isUserDocArr;
+  const isDocArr = isArr && !!(field[0] as T)?.toJson;
+  const isDoc = !!(field as T).toJson;
+  return isDoc || isDocArr;
 }
 
 export function documentRefToJson<T extends Document>(

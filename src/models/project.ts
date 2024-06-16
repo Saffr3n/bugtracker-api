@@ -4,7 +4,7 @@ import type { DocumentCommon, DocumentJson, DocumentRaw } from '../globals';
 
 interface ProjectCommon extends DocumentCommon {
   title: string;
-  description?: string;
+  detail?: string;
   manager: string | mongoose.Types.ObjectId | UserJson | UserDocument;
   developers: (string | mongoose.Types.ObjectId | UserJson | UserDocument)[];
   createDate: string | Date;
@@ -28,7 +28,7 @@ interface ProjectRaw extends ProjectCommon, DocumentRaw {
 const ProjectSchema = new mongoose.Schema<ProjectRaw>(
   {
     title: { type: String, required: true },
-    description: { type: String, required: false },
+    detail: { type: String, required: false },
     manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     developers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     createDate: { type: Date, default: new Date() }
@@ -41,7 +41,7 @@ const ProjectSchema = new mongoose.Schema<ProjectRaw>(
           id: this.id as string,
           url: `/projects/${this.title.toLowerCase().replaceAll(' ', '+')}`,
           title: this.title,
-          description: this.description,
+          detail: this.detail,
           manager: documentRefToJson(this.manager),
           developers: documentRefToJson(this.developers),
           createDate: this.createDate.toISOString()

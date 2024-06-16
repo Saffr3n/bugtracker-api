@@ -1,5 +1,5 @@
 import { create } from '../services/projects';
-import { validateTitle, validateDescription } from '../validators/projects';
+import { validateTitle, validateDetail } from '../validators/projects';
 import checkUserRole from '../middlewares/check-user-role';
 import { ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
@@ -7,7 +7,7 @@ import type { Request, Response, NextFunction } from 'express';
 export const createProject = [
   checkUserRole('Project Manager'),
   validateTitle(),
-  validateDescription(),
+  validateDetail(),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {

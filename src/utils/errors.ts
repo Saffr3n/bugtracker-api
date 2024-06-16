@@ -4,7 +4,8 @@ import {
   PASSWORD_MIN_LENGTH,
   TITLE_MIN_LENGTH,
   TITLE_MAX_LENGTH,
-  DESCRIPTION_MAX_LENGTH
+  DETAIL_MAX_LENGTH,
+  TICKET_TYPES
 } from '../constants/validation';
 
 export class ApiError extends Error {
@@ -94,7 +95,7 @@ export class LoginError extends ClientError {
 
   public constructor() {
     super(
-      'Invalid username/email or password. Either they are misspelled or user with provided credentials does not exist. Please check correctness of your credentials and try again, or create a new account if it does not exist yet.'
+      'Invalid username/email or password. Either they are misspelled or the user with the provided credentials does not exist. Please check the correctness of your credentials and try again, or create a new account if it does not exist yet.'
     );
   }
 }
@@ -106,7 +107,7 @@ export abstract class ValidationError extends ClientError {
 export class UsernameRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Username is required. It serves as a unique identifier in user profile URL, as a display name, and during login process. Please choose a username that represents you and is not already in use.',
+      'Username is required. It serves as a unique identifier in the user profile URL, as a display name, and during the login process. Please choose a username that represents you and is not already in use.',
       true
     );
   }
@@ -123,7 +124,7 @@ export class UsernameLengthError extends ValidationError {
 export class UsernameInvalidError extends ValidationError {
   public constructor() {
     super(
-      'Username can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a username within this limit.',
+      'Username can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a valid username.',
       true
     );
   }
@@ -168,7 +169,7 @@ export class EmailAlreadyInUseError extends ValidationError {
 export class PasswordRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Password is required for account security. It is essential for preforming account-related actions. Please provide a password to continue.',
+      'Password is required for account security. It is essential for performing account-related actions. Please provide a password to continue.',
       true
     );
   }
@@ -203,7 +204,7 @@ export class PasswordConfirmationError extends ValidationError {
 export class TitleRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Document title is required. Please choose a descriptive title that represents your document the most.',
+      'Document title is required. Please choose a descriptive title that represents your document.',
       true
     );
   }
@@ -212,7 +213,7 @@ export class TitleRequiredError extends ValidationError {
 export class TitleLengthError extends ValidationError {
   public constructor() {
     super(
-      `Document title must be between ${TITLE_MIN_LENGTH} and ${TITLE_MAX_LENGTH} characters in length. Please choose a document title within this limit.`
+      `Document title must be between ${TITLE_MIN_LENGTH} and ${TITLE_MAX_LENGTH} characters in length. Please choose a title within this limit.`
     );
   }
 }
@@ -220,25 +221,62 @@ export class TitleLengthError extends ValidationError {
 export class TitleInvalidError extends ValidationError {
   public constructor() {
     super(
-      'Document title can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a document title within this limit.',
+      'Document title can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a valid title.'
+    );
+  }
+}
+
+export class TitleAlreadyInUseError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided document title is already in use. Please choose a different title that has not been taken.',
       true
     );
   }
 }
 
-export class ProjectTitleAlreadyInUseError extends ValidationError {
+export class DetailRequiredError extends ValidationError {
   public constructor() {
     super(
-      'The provided project title is already in use. Please choose a different project title that has not been taken.',
+      'Document detail is required. Please provide a descriptive detail that explains the purpose of this document.',
       true
     );
   }
 }
 
-export class DescriptionTooLongError extends ValidationError {
+export class DetailTooLongError extends ValidationError {
   public constructor() {
     super(
-      `Document description must be at most ${DESCRIPTION_MAX_LENGTH} characters in length. Please provide a shorter document description.`,
+      `Document detail must be at most ${DETAIL_MAX_LENGTH} characters in length. Please provide a shorter detail.`,
+      true
+    );
+  }
+}
+
+export class TicketTypeRequiredError extends ValidationError {
+  public constructor() {
+    super(
+      'Ticket type is required. Please choose a type that represents the purpose of this ticket.',
+      true
+    );
+  }
+}
+
+export class TicketTypeInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      `Ticket type can only be one of the following values: ${TICKET_TYPES.join(
+        ', '
+      )}. Please choose one of the available types.`,
+      true
+    );
+  }
+}
+
+export class IDInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      'Document ID is invalid. Please provide a valid ID of the parent document (e.g., if you are trying to create a ticket, provide the ID of the project this ticket is associated with).',
       true
     );
   }
@@ -259,8 +297,12 @@ export const validationErrors = {
   TitleRequiredError,
   TitleLengthError,
   TitleInvalidError,
-  ProjectTitleAlreadyInUseError,
-  DescriptionTooLongError
+  TitleAlreadyInUseError,
+  DetailRequiredError,
+  DetailTooLongError,
+  TicketTypeRequiredError,
+  TicketTypeInvalidError,
+  IDInvalidError
 };
 
 export const clientErrors = {
