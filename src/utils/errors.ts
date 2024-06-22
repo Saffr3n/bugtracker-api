@@ -5,7 +5,8 @@ import {
   TITLE_MIN_LENGTH,
   TITLE_MAX_LENGTH,
   DETAIL_MAX_LENGTH,
-  TICKET_TYPES
+  TICKET_TYPES,
+  TICKET_PRIORITIES
 } from '../constants/validation';
 
 export class ApiError extends Error {
@@ -284,6 +285,26 @@ export class TicketTypeInvalidError extends ValidationError {
   }
 }
 
+export class TicketPriorityRequiredError extends ValidationError {
+  public constructor() {
+    super(
+      'Ticket priority is required. Please select a priority level for this ticket.',
+      true
+    );
+  }
+}
+
+export class TicketPriorityInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      `Ticket priority can only be one of the following values: ${TICKET_PRIORITIES.join(
+        ', '
+      )}. Please choose one of the available priority levels.`,
+      true
+    );
+  }
+}
+
 export class IDInvalidError extends ValidationError {
   public constructor() {
     super(
@@ -313,6 +334,8 @@ export const validationErrors = {
   DetailTooLongError,
   TicketTypeRequiredError,
   TicketTypeInvalidError,
+  TicketPriorityRequiredError,
+  TicketPriorityInvalidError,
   IDInvalidError
 };
 

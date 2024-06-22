@@ -1,4 +1,6 @@
 import type { Types } from 'mongoose';
+import type { FieldMessageFactory } from 'express-validator';
+import type { ApiError } from './errors';
 import type { Document } from '../globals';
 
 /**
@@ -14,6 +16,15 @@ export const stringToCaseInsensitiveRegex = (
 ): RegExp => {
   if (strict) string = `^${string}$`;
   return new RegExp(string, 'i');
+};
+
+export const capitalizeString = (string: string): string => {
+  if (!string) return string;
+  return `${string[0]!.toUpperCase()}${string.slice(1)}`;
+};
+
+export const passValidationError = (error: ApiError): FieldMessageFactory => {
+  return (_, { req }) => (req.error = error);
 };
 
 export function isDocumentRefPopulated<T extends Document>(

@@ -1,5 +1,6 @@
 import { body } from 'express-validator';
 import { getByTitle } from '../services/projects';
+import { passValidationError } from '../utils';
 import {
   ApiError,
   TitleRequiredError,
@@ -19,13 +20,13 @@ export const validateTitle = () =>
   body('title')
     .trim()
     .notEmpty()
-    .withMessage((_, { req }) => (req.error = new TitleRequiredError()))
+    .withMessage(passValidationError(new TitleRequiredError()))
     .bail({ level: 'request' })
     .isLength({ min: TITLE_MIN_LENGTH, max: TITLE_MAX_LENGTH })
-    .withMessage((_, { req }) => (req.error = new TitleLengthError()))
+    .withMessage(passValidationError(new TitleLengthError()))
     .bail({ level: 'request' })
     .matches(TITLE_PATTERN)
-    .withMessage((_, { req }) => (req.error = new TitleInvalidError()))
+    .withMessage(passValidationError(new TitleInvalidError()))
     .bail({ level: 'request' })
     .custom(async (title, { req }) => {
       let project: ProjectDocument | null;
@@ -45,5 +46,5 @@ export const validateDetail = () =>
     .optional()
     .trim()
     .isLength({ max: DETAIL_MAX_LENGTH })
-    .withMessage((_, { req }) => (req.error = new DetailTooLongError()))
+    .withMessage(passValidationError(new DetailTooLongError()))
     .bail({ level: 'request' });

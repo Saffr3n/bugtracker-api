@@ -1,11 +1,16 @@
 import mongoose from 'mongoose';
 import { documentRefToJson } from '../utils';
-import { TICKET_TYPES, TICKET_STATUSES } from '../constants/validation';
+import {
+  TICKET_TYPES,
+  TICKET_STATUSES,
+  TICKET_PRIORITIES
+} from '../constants/validation';
 import type { DocumentCommon, DocumentJson, DocumentRaw } from '../globals';
 
 interface TicketCommon extends DocumentCommon {
   type: TicketType;
   status: TicketStatus;
+  priority: TicketPriority;
   title: string;
   detail: string;
   project: string | mongoose.Types.ObjectId | ProjectJson | ProjectDocument;
@@ -35,6 +40,7 @@ const TicketSchema = new mongoose.Schema<TicketRaw>(
   {
     type: { type: String, enum: TICKET_TYPES, required: true },
     status: { type: String, enum: TICKET_STATUSES, default: 'Open' },
+    priority: { type: String, enum: TICKET_PRIORITIES, required: true },
     title: { type: String, required: true },
     detail: { type: String, required: true },
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
@@ -51,6 +57,7 @@ const TicketSchema = new mongoose.Schema<TicketRaw>(
           url: `/tickets/${this.id}`,
           type: this.type,
           status: this.status,
+          priority: this.priority,
           title: this.title,
           detail: this.detail,
           project: documentRefToJson(this.project),

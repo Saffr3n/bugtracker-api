@@ -1,5 +1,6 @@
 import { body } from 'express-validator';
 import { getByUsername, getByEmail } from '../services/users';
+import { passValidationError } from '../utils';
 import {
   ApiError,
   UsernameRequiredError,
@@ -26,13 +27,13 @@ export const validateUsername = () =>
   body('username')
     .trim()
     .notEmpty()
-    .withMessage((_, { req }) => (req.error = new UsernameRequiredError()))
+    .withMessage(passValidationError(new UsernameRequiredError()))
     .bail({ level: 'request' })
     .isLength({ min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH })
-    .withMessage((_, { req }) => (req.error = new UsernameLengthError()))
+    .withMessage(passValidationError(new UsernameLengthError()))
     .bail({ level: 'request' })
     .matches(USERNAME_PATTERN)
-    .withMessage((_, { req }) => (req.error = new UsernameInvalidError()))
+    .withMessage(passValidationError(new UsernameInvalidError()))
     .bail({ level: 'request' })
     .custom(async (username, { req }) => {
       let user: UserDocument | null;
@@ -52,10 +53,10 @@ export const validateEmail = () =>
     .trim()
     .toLowerCase()
     .notEmpty()
-    .withMessage((_, { req }) => (req.error = new EmailRequiredError()))
+    .withMessage(passValidationError(new EmailRequiredError()))
     .bail({ level: 'request' })
     .isEmail()
-    .withMessage((_, { req }) => (req.error = new EmailInvalidError()))
+    .withMessage(passValidationError(new EmailInvalidError()))
     .bail({ level: 'request' })
     .custom(async (email, { req }) => {
       let user: UserDocument | null;
@@ -74,13 +75,13 @@ export const validatePassword = () =>
   body('password')
     .trim()
     .notEmpty()
-    .withMessage((_, { req }) => (req.error = new PasswordRequiredError()))
+    .withMessage(passValidationError(new PasswordRequiredError()))
     .bail({ level: 'request' })
     .isLength({ min: PASSWORD_MIN_LENGTH })
-    .withMessage((_, { req }) => (req.error = new PasswordTooShortError()))
+    .withMessage(passValidationError(new PasswordTooShortError()))
     .bail({ level: 'request' })
     .matches(PASSWORD_PATTERN)
-    .withMessage((_, { req }) => (req.error = new PasswordInvalidError()))
+    .withMessage(passValidationError(new PasswordInvalidError()))
     .bail({ level: 'request' })
     .custom((password, { req }) => {
       const isConfirmed = password === req.body.confirm;

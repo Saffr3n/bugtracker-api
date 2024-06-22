@@ -13,7 +13,8 @@ import type { ApiError } from './utils/errors';
 import {
   USER_ROLES,
   TICKET_TYPES,
-  TICKET_STATUSES
+  TICKET_STATUSES,
+  TICKET_PRIORITIES
 } from './constants/validation';
 
 interface ApiResponseJson {
@@ -58,6 +59,7 @@ declare global {
 
   type TicketType = (typeof TICKET_TYPES)[number];
   type TicketStatus = (typeof TICKET_STATUSES)[number];
+  type TicketPriority = (typeof TICKET_PRIORITIES)[number];
   type TicketDocument = TDoc;
   type TicketJson = TJson;
 
@@ -74,8 +76,8 @@ declare global {
   }
 }
 
-declare module 'mongoose' {
-  interface Connection {
-    getClient(): MongoClient;
+declare module 'express-validator/lib/base' {
+  interface Request {
+    error?: ApiError;
   }
 }

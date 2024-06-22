@@ -20,3 +20,4 @@ export enum USER_ROLES {
 
 export const TICKET_TYPES = ['Feature', 'Issue', 'Task', 'Help'] as const;
 export const TICKET_STATUSES = ['Open', 'Closed'] as const;
+export const TICKET_PRIORITIES = ['High', 'Medium', 'Low'] as const;

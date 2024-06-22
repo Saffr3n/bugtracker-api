@@ -1,6 +1,7 @@
 import { create } from '../services/tickets';
 import {
   validateType,
+  validatePriority,
   validateTitle,
   validateDetail,
   validateProject
@@ -11,7 +12,9 @@ import type { Request, Response, NextFunction } from 'express';
 
 export const createTicket = [
   checkAuthentication(),
+  
   validateType(),
+  validatePriority(),
   validateTitle(),
   validateDetail(),
   validateProject(),

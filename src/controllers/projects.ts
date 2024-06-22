@@ -6,6 +6,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 export const createProject = [
   checkUserRole('Project Manager'),
+
   validateTitle(),
   validateDetail(),
 
