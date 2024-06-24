@@ -38,8 +38,8 @@ const ProjectSchema = new mongoose.Schema<ProjectRaw>(
     methods: {
       toJson(): ProjectJson {
         return {
-          id: this.id as string,
-          url: `/projects/${this.title.toLowerCase().replaceAll(' ', '+')}`,
+          id: this.id,
+          url: `/projects/${this.id}`,
           title: this.title,
           detail: this.detail,
           manager: documentRefToJson(this.manager),

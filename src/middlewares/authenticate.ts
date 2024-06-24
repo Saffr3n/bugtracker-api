@@ -23,7 +23,7 @@ export default (isNewUser: boolean = false) =>
         detail: `User ${user.username} with id ${user.id} was successfully ${
           isNewUser ? 'created and ' : ''
         }logged in.`,
-        data: user.toJson()
+        data: user.toJson(true)
       };
 
       res.status(json.status).json(json);

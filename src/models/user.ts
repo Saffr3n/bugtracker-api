@@ -4,7 +4,7 @@ import type { DocumentCommon, DocumentJson, DocumentRaw } from '../globals';
 
 interface UserCommon extends DocumentCommon {
   username: string;
-  email: string;
+  email?: string;
   role: UserRole;
   createDate: string | Date;
   avatarUrl?: string;
@@ -13,13 +13,16 @@ interface UserCommon extends DocumentCommon {
 export interface UserJson extends UserCommon, DocumentJson {
   id: string;
   url: string;
+  email?: string;
   createDate: string;
 }
 
 interface UserRaw extends UserCommon, DocumentRaw {
+  email: string;
   hash: string;
   createDate: Date;
-  toJson(): UserJson;
+  /** @param [includeEmail=false] - Default: `false` */
+  toJson(includeEmail?: boolean): UserJson;
 }
 
 const UserSchema = new mongoose.Schema<UserRaw>(
@@ -34,16 +37,18 @@ const UserSchema = new mongoose.Schema<UserRaw>(
   {
     collection: 'users',
     methods: {
-      toJson(): UserJson {
-        return {
-          id: this.id as string,
-          url: `/users/${this.username.toLowerCase().replaceAll(' ', '+')}`,
+      toJson(includeEmail: boolean = false): UserJson {
+        const json: UserJson = {
+          id: this.id,
+          url: `/users/${this.id}`,
           username: this.username,
-          email: this.email,
           role: this.role,
           createDate: this.createDate.toISOString(),
           avatarUrl: this.avatarUrl
         };
+
+        if (includeEmail) json.email = this.email;
+        return json;
       }
     }
   }

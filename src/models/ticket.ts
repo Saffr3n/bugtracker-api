@@ -53,7 +53,7 @@ const TicketSchema = new mongoose.Schema<TicketRaw>(
     methods: {
       toJson(): TicketJson {
         return {
-          id: this.id as string,
+          id: this.id,
           url: `/tickets/${this.id}`,
           type: this.type,
           status: this.status,
