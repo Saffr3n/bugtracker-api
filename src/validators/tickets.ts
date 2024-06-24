@@ -8,11 +8,12 @@ import {
   TicketPriorityRequiredError,
   TicketPriorityInvalidError,
   TitleRequiredError,
-  TitleLengthError,
+  TitleTooShortError,
+  TitleTooLongError,
   DetailRequiredError,
   DetailTooLongError,
-  IDInvalidError,
-  DocumentNotFoundError
+  ProjectIDInvalidError,
+  ProjectNotFoundError
 } from '../utils/errors';
 import {
   TICKET_TYPES,
@@ -50,8 +51,11 @@ export const validateTitle = () =>
     .notEmpty()
     .withMessage(passValidationError(new TitleRequiredError()))
     .bail({ level: 'request' })
-    .isLength({ min: TITLE_MIN_LENGTH, max: TITLE_MAX_LENGTH })
-    .withMessage(passValidationError(new TitleLengthError()))
+    .isLength({ min: TITLE_MIN_LENGTH })
+    .withMessage(passValidationError(new TitleTooShortError()))
+    .bail({ level: 'request' })
+    .isLength({ max: TITLE_MAX_LENGTH })
+    .withMessage(passValidationError(new TitleTooLongError()))
     .bail({ level: 'request' });
 
 export const validateDetail = () =>
@@ -68,7 +72,7 @@ export const validateProject = () =>
   body('project')
     .trim()
     .isMongoId()
-    .withMessage(passValidationError(new IDInvalidError()))
+    .withMessage(passValidationError(new ProjectIDInvalidError()))
     .bail({ level: 'request' })
     .custom(async (id, { req }) => {
       let project: ProjectDocument | null;
@@ -76,9 +80,15 @@ export const validateProject = () =>
       try {
         project = await getById(id);
       } catch (err) {
-        throw (req.error = new ApiError(err));
+        req.error = new ApiError(err);
+        return Promise.reject();
       }
 
-      if (!project) throw (req.error = new DocumentNotFoundError());
+      if (!project) {
+        req.error = new ProjectNotFoundError();
+        return Promise.reject();
+      }
+
+      return Promise.resolve();
     })
     .bail({ level: 'request' });

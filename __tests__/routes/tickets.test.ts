@@ -51,7 +51,7 @@ describe('tickets router', () => {
         });
     });
 
-    it('does not create ticket without title', (done) => {
+    it('does not create ticket without priority', (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
@@ -61,6 +61,34 @@ describe('tickets router', () => {
             .post('/tickets')
             .set('cookie', cookie)
             .send({ type: 'issue' })
+            .expect(400, /ticket priority required/i, done);
+        });
+    });
+
+    it('does not create ticket with invalid priority', (done) => {
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .post('/tickets')
+            .set('cookie', cookie)
+            .send({ type: 'issue', priority: 'invalid' })
+            .expect(400, /ticket priority invalid/i, done);
+        });
+    });
+
+    it('does not create ticket without title', (done) => {
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .post('/tickets')
+            .set('cookie', cookie)
+            .send({ type: 'issue', priority: 'high' })
             .expect(400, /title required/i, done);
         });
     });
@@ -76,9 +104,10 @@ describe('tickets router', () => {
             .set('cookie', cookie)
             .send({
               type: 'issue',
+              priority: 'high',
               title: createStringOfLength(TITLE_MIN_LENGTH - 1)
             })
-            .expect(400, /title length error/i, done);
+            .expect(400, /title too short/i, done);
         });
     });
 
@@ -93,9 +122,10 @@ describe('tickets router', () => {
             .set('cookie', cookie)
             .send({
               type: 'issue',
+              priority: 'high',
               title: createStringOfLength(TITLE_MAX_LENGTH + 1)
             })
-            .expect(400, /title length error/i, done);
+            .expect(400, /title too long/i, done);
         });
     });
 
@@ -108,7 +138,11 @@ describe('tickets router', () => {
           request(app)
             .post('/tickets')
             .set('cookie', cookie)
-            .send({ type: 'issue', title: 'Test Ticket' })
+            .send({
+              type: 'issue',
+              priority: 'high',
+              title: 'Test Ticket'
+            })
             .expect(400, /detail required/i, done);
         });
     });
@@ -124,6 +158,7 @@ describe('tickets router', () => {
             .set('cookie', cookie)
             .send({
               type: 'issue',
+              priority: 'high',
               title: 'Test Ticket',
               detail: createStringOfLength(DETAIL_MAX_LENGTH + 1)
             })
@@ -142,11 +177,12 @@ describe('tickets router', () => {
             .set('cookie', cookie)
             .send({
               type: 'issue',
+              priority: 'high',
               title: 'Test Ticket',
               detail: 'Test detail...',
               project: 'invalid'
             })
-            .expect(400, /id invalid/i, done);
+            .expect(400, /project id invalid/i, done);
         });
     });
 
@@ -161,11 +197,12 @@ describe('tickets router', () => {
             .set('cookie', cookie)
             .send({
               type: 'issue',
+              priority: 'high',
               title: 'Test Ticket',
               detail: 'Test detail...',
               project: new mongoose.Types.ObjectId()
             })
-            .expect(404, /document not found/i, done);
+            .expect(404, /project not found/i, done);
         });
     });
 
@@ -180,6 +217,7 @@ describe('tickets router', () => {
             .set('cookie', cookie)
             .send({
               type: 'issue',
+              priority: 'high',
               title: 'Test Ticket',
               detail: 'Test detail...',
               project: mockDb.projects[0]!.id

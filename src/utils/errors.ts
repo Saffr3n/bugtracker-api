@@ -58,23 +58,23 @@ export class InternalServerError extends ClientError {
   }
 }
 
+export class ProjectNotFoundError extends ClientError {
+  public override readonly status: number = 404;
+
+  public constructor() {
+    super(
+      'The project with provided ID could not be found. It either does not exist or its ID is misspelled. Please check the project ID correctness and try again.',
+      true
+    );
+  }
+}
+
 export class PathNotFoundError extends ClientError {
   public override readonly status: number = 404;
 
   public constructor() {
     super(
       'The requested path could not be found. It either does not exist on the server or is misspelled. Please check the path correctness and try again.',
-      true
-    );
-  }
-}
-
-export class DocumentNotFoundError extends ClientError {
-  public override readonly status: number = 404;
-
-  public constructor() {
-    super(
-      'The document with provided ID could not be found. It either does not exist or its ID is misspelled. Please check the document ID correctness and try again.',
       true
     );
   }
@@ -102,7 +102,7 @@ export class UnauthenticatedError extends ClientError {
   }
 }
 
-export class LoginError extends ClientError {
+export class AuthenticationError extends ClientError {
   public override readonly status: number = 401;
 
   public constructor() {
@@ -119,24 +119,59 @@ export abstract class ValidationError extends ClientError {
 export class UsernameRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Username is required. It serves as a unique identifier in the user profile URL, as a display name, and during the login process. Please choose a username that represents you and is not already in use.',
+      'Username is required. It serves as a unique display name and can be used during the login process instead of an email. Please choose a username that represents you.',
       true
     );
   }
 }
 
-export class UsernameLengthError extends ValidationError {
+export class UsernameTooShortError extends ValidationError {
   public constructor() {
     super(
-      `Username must be between ${USERNAME_MIN_LENGTH} and ${USERNAME_MAX_LENGTH} characters in length. Please choose a username within this limit.`
+      `The provided username is too short. It must be at least ${USERNAME_MIN_LENGTH} characters long. Please choose a longer username.`,
+      true
     );
   }
 }
 
-export class UsernameInvalidError extends ValidationError {
+export class UsernameTooLongError extends ValidationError {
   public constructor() {
     super(
-      'Username can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a valid username.',
+      `The provided username is too long. It must be at most ${USERNAME_MAX_LENGTH} characters long. Please choose a shorter username.`,
+      true
+    );
+  }
+}
+
+export class UsernameMustStartWithLetterError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided username is invalid. It must start with a Latin letter. Please choose a username that meets this requirement.',
+      true
+    );
+  }
+}
+
+export class UsernameInvalidCharactersError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided username is invalid. It can only contain Latin letters, numbers, dots, underscores, and hyphens. Please choose a username that meets this requirement.'
+    );
+  }
+}
+
+export class UsernameConsecutiveCharactersError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided username is invalid. It cannot contain consecutive dots, underscores, or hyphens. Please choose a username that meets this requirement.'
+    );
+  }
+}
+
+export class UsernameMustEndWithLetterOrNumberError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided username is invalid. It must end with a Latin letter or number. Please choose a username that meets this requirement.',
       true
     );
   }
@@ -154,7 +189,7 @@ export class UsernameAlreadyInUseError extends ValidationError {
 export class EmailRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Email is required solely for essential account-related communication, such as account recovery or login process. Rest assured, it will not be shared with any third party.',
+      'Email is required. It is used solely for essential account-related communication such as account recovery or authentication. Please provide an email to continue.',
       true
     );
   }
@@ -163,7 +198,7 @@ export class EmailRequiredError extends ValidationError {
 export class EmailInvalidError extends ValidationError {
   public constructor() {
     super(
-      'The provided email address is invalid. Please make sure the email address follows the standard email format (e.g., example@example.com).',
+      'The provided email is invalid. Please make sure the email address follows the standard email format (e.g., example@example.com).',
       true
     );
   }
@@ -172,7 +207,7 @@ export class EmailInvalidError extends ValidationError {
 export class EmailAlreadyInUseError extends ValidationError {
   public constructor() {
     super(
-      'The provided email address is already in use. Please use a different email address or try to recover your account if you have forgotten your credentials.',
+      'The provided email is already in use. Please use a different email address or try to recover your account if you have forgotten your credentials.',
       true
     );
   }
@@ -181,7 +216,7 @@ export class EmailAlreadyInUseError extends ValidationError {
 export class PasswordRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Password is required for account security. It is essential for performing account-related actions. Please provide a password to continue.',
+      'Password is required. It is essential for performing account-related actions. Please provide a password to continue.',
       true
     );
   }
@@ -190,7 +225,7 @@ export class PasswordRequiredError extends ValidationError {
 export class PasswordTooShortError extends ValidationError {
   public constructor() {
     super(
-      `Password must be at least ${PASSWORD_MIN_LENGTH} characters in length. Please choose a longer password for better security.`,
+      `The provided password is too short. It must be at least ${PASSWORD_MIN_LENGTH} characters long. Please choose a longer password for better security.`,
       true
     );
   }
@@ -199,7 +234,7 @@ export class PasswordTooShortError extends ValidationError {
 export class PasswordInvalidError extends ValidationError {
   public constructor() {
     super(
-      'Password must contain at least one uppercase letter, one lowercase letter, and one digit.',
+      'The provided password is invalid. It must contain at least one uppercase letter, one lowercase letter, and one digit. Please choose a password that meets this requirement.',
       true
     );
   }
@@ -208,7 +243,7 @@ export class PasswordInvalidError extends ValidationError {
 export class PasswordConfirmationError extends ValidationError {
   public constructor() {
     super(
-      'Password does not match the confirmation field. Please ensure they are identical.'
+      'The provided password does not match the confirmation field. Please ensure they are identical.'
     );
   }
 }
@@ -222,26 +257,19 @@ export class TitleRequiredError extends ValidationError {
   }
 }
 
-export class TitleLengthError extends ValidationError {
+export class TitleTooShortError extends ValidationError {
   public constructor() {
     super(
-      `Document title must be between ${TITLE_MIN_LENGTH} and ${TITLE_MAX_LENGTH} characters in length. Please choose a title within this limit.`
+      `The provided document title is too short. It must be at least ${TITLE_MIN_LENGTH} characters long. Please choose a longer title.`,
+      true
     );
   }
 }
 
-export class TitleInvalidError extends ValidationError {
+export class TitleTooLongError extends ValidationError {
   public constructor() {
     super(
-      'Document title can only contain letters, numbers, and non-consecutive spaces, underscores, dashes, or dots. Please choose a valid title.'
-    );
-  }
-}
-
-export class TitleAlreadyInUseError extends ValidationError {
-  public constructor() {
-    super(
-      'The provided document title is already in use. Please choose a different title that has not been taken.',
+      `The provided document title is too long. It must be at most ${TITLE_MAX_LENGTH} characters long. Please choose a shorter title.`,
       true
     );
   }
@@ -259,7 +287,7 @@ export class DetailRequiredError extends ValidationError {
 export class DetailTooLongError extends ValidationError {
   public constructor() {
     super(
-      `Document detail must be at most ${DETAIL_MAX_LENGTH} characters in length. Please provide a shorter detail.`,
+      `The provided document detail is too long. It must be at most ${DETAIL_MAX_LENGTH} characters long. Please provide a shorter detail.`,
       true
     );
   }
@@ -277,7 +305,7 @@ export class TicketTypeRequiredError extends ValidationError {
 export class TicketTypeInvalidError extends ValidationError {
   public constructor() {
     super(
-      `Ticket type can only be one of the following values: ${TICKET_TYPES.join(
+      `The provided ticket type is invalid. It can only be one of the following values: ${TICKET_TYPES.join(
         ', '
       )}. Please choose one of the available types.`,
       true
@@ -288,7 +316,7 @@ export class TicketTypeInvalidError extends ValidationError {
 export class TicketPriorityRequiredError extends ValidationError {
   public constructor() {
     super(
-      'Ticket priority is required. Please select a priority level for this ticket.',
+      'Ticket priority is required. Please choose a priority level for this ticket.',
       true
     );
   }
@@ -297,7 +325,7 @@ export class TicketPriorityRequiredError extends ValidationError {
 export class TicketPriorityInvalidError extends ValidationError {
   public constructor() {
     super(
-      `Ticket priority can only be one of the following values: ${TICKET_PRIORITIES.join(
+      `The provided ticket priority is invalid. It can only be one of the following values: ${TICKET_PRIORITIES.join(
         ', '
       )}. Please choose one of the available priority levels.`,
       true
@@ -305,46 +333,53 @@ export class TicketPriorityInvalidError extends ValidationError {
   }
 }
 
-export class IDInvalidError extends ValidationError {
+export class ProjectIDInvalidError extends ValidationError {
   public constructor() {
     super(
-      'Document ID is invalid. Please provide a valid ID of the parent document (e.g., if you are trying to create a ticket, provide the ID of the project this ticket is associated with).',
+      'The provided project ID is invalid. Please check the project ID correctness and try again.',
       true
     );
   }
 }
 
-export const validationErrors = {
+export const clientErrors = {
+  InternalServerError,
+  ProjectNotFoundError,
+  PathNotFoundError,
+  AccessDeniedError,
+  UnauthenticatedError,
+  AuthenticationError,
+
   UsernameRequiredError,
-  UsernameLengthError,
-  UsernameInvalidError,
+  UsernameTooShortError,
+  UsernameTooLongError,
+  UsernameMustStartWithLetterError,
+  UsernameInvalidCharactersError,
+  UsernameConsecutiveCharactersError,
+  UsernameMustEndWithLetterOrNumberError,
   UsernameAlreadyInUseError,
+
   EmailRequiredError,
   EmailInvalidError,
   EmailAlreadyInUseError,
+
   PasswordRequiredError,
   PasswordTooShortError,
   PasswordInvalidError,
   PasswordConfirmationError,
+
   TitleRequiredError,
-  TitleLengthError,
-  TitleInvalidError,
-  TitleAlreadyInUseError,
+  TitleTooShortError,
+  TitleTooLongError,
+
   DetailRequiredError,
   DetailTooLongError,
+
   TicketTypeRequiredError,
   TicketTypeInvalidError,
+
   TicketPriorityRequiredError,
   TicketPriorityInvalidError,
-  IDInvalidError
-};
 
-export const clientErrors = {
-  InternalServerError,
-  PathNotFoundError,
-  DocumentNotFoundError,
-  AccessDeniedError,
-  UnauthenticatedError,
-  LoginError,
-  ...validationErrors
+  ProjectIDInvalidError
 };

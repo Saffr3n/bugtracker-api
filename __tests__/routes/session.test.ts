@@ -10,7 +10,7 @@ describe('session router', () => {
       request(app)
         .post('/session')
         .send({ username: 'non-existent-user', password: 'Test1234' })
-        .expect(401, /login error/i, done);
+        .expect(401, /authentication error/i, done);
     });
 
     it('logs in existent user', (done) => {

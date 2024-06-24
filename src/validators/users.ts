@@ -4,8 +4,12 @@ import { passValidationError } from '../utils';
 import {
   ApiError,
   UsernameRequiredError,
-  UsernameLengthError,
-  UsernameInvalidError,
+  UsernameTooShortError,
+  UsernameTooLongError,
+  UsernameMustStartWithLetterError,
+  UsernameInvalidCharactersError,
+  UsernameConsecutiveCharactersError,
+  UsernameMustEndWithLetterOrNumberError,
   UsernameAlreadyInUseError,
   EmailRequiredError,
   EmailInvalidError,
@@ -18,9 +22,7 @@ import {
 import {
   USERNAME_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
-  USERNAME_PATTERN,
-  PASSWORD_MIN_LENGTH,
-  PASSWORD_PATTERN
+  PASSWORD_MIN_LENGTH
 } from '../constants/validation';
 
 export const validateUsername = () =>
@@ -29,11 +31,41 @@ export const validateUsername = () =>
     .notEmpty()
     .withMessage(passValidationError(new UsernameRequiredError()))
     .bail({ level: 'request' })
-    .isLength({ min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH })
-    .withMessage(passValidationError(new UsernameLengthError()))
+    .isLength({ min: USERNAME_MIN_LENGTH })
+    .withMessage(passValidationError(new UsernameTooShortError()))
     .bail({ level: 'request' })
-    .matches(USERNAME_PATTERN)
-    .withMessage(passValidationError(new UsernameInvalidError()))
+    .isLength({ max: USERNAME_MAX_LENGTH })
+    .withMessage(passValidationError(new UsernameTooLongError()))
+    .bail({ level: 'request' })
+    .custom((username, { req }) => {
+      const regex = /[a-z]/i;
+      const firstLetter = username[0];
+      const startsWithLetter = regex.test(firstLetter);
+
+      if (!startsWithLetter) {
+        req.error = new UsernameMustStartWithLetterError();
+      }
+
+      return startsWithLetter;
+    })
+    .bail({ level: 'request' })
+    .matches(/^[a-z0-9._-]*$/i)
+    .withMessage(passValidationError(new UsernameInvalidCharactersError()))
+    .bail({ level: 'request' })
+    .matches(/(?!.*[._-]{2,})^.*$/)
+    .withMessage(passValidationError(new UsernameConsecutiveCharactersError()))
+    .bail({ level: 'request' })
+    .custom((username, { req }) => {
+      const regex = /[a-z0-9]/i;
+      const lastLetter = username[username.length - 1];
+      const endsWithLetterOrNumber = regex.test(lastLetter);
+
+      if (!endsWithLetterOrNumber) {
+        req.error = new UsernameMustEndWithLetterOrNumberError();
+      }
+
+      return endsWithLetterOrNumber;
+    })
     .bail({ level: 'request' })
     .custom(async (username, { req }) => {
       let user: UserDocument | null;
@@ -41,10 +73,16 @@ export const validateUsername = () =>
       try {
         user = await getByUsername(username);
       } catch (err) {
-        throw (req.error = new ApiError(err));
+        req.error = new ApiError(err);
+        return Promise.reject();
       }
 
-      if (user) throw (req.error = new UsernameAlreadyInUseError());
+      if (user) {
+        req.error = new UsernameAlreadyInUseError();
+        return Promise.reject();
+      }
+
+      return Promise.resolve();
     })
     .bail({ level: 'request' });
 
@@ -64,10 +102,16 @@ export const validateEmail = () =>
       try {
         user = await getByEmail(email);
       } catch (err) {
-        throw (req.error = new ApiError(err));
+        req.error = new ApiError(err);
+        return Promise.reject();
       }
 
-      if (user) throw (req.error = new EmailAlreadyInUseError());
+      if (user) {
+        req.error = new EmailAlreadyInUseError();
+        return Promise.reject();
+      }
+
+      return Promise.resolve();
     })
     .bail({ level: 'request' });
 
@@ -80,11 +124,17 @@ export const validatePassword = () =>
     .isLength({ min: PASSWORD_MIN_LENGTH })
     .withMessage(passValidationError(new PasswordTooShortError()))
     .bail({ level: 'request' })
-    .matches(PASSWORD_PATTERN)
+    .matches(/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)^.*$/)
     .withMessage(passValidationError(new PasswordInvalidError()))
     .bail({ level: 'request' })
     .custom((password, { req }) => {
-      const isConfirmed = password === req.body.confirm;
-      if (!isConfirmed) throw (req.error = new PasswordConfirmationError());
+      const { confirm } = req.body;
+      const isConfirmed = password === confirm;
+
+      if (!isConfirmed) {
+        req.error = new PasswordConfirmationError();
+      }
+
+      return isConfirmed;
     })
     .bail({ level: 'request' });

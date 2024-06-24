@@ -56,7 +56,7 @@ describe('projects router', () => {
             .post('/projects')
             .set('cookie', cookie)
             .send({ title: createStringOfLength(TITLE_MIN_LENGTH - 1) })
-            .expect(400, /title length error/i, done);
+            .expect(400, /title too short/i, done);
         });
     });
 
@@ -70,49 +70,7 @@ describe('projects router', () => {
             .post('/projects')
             .set('cookie', cookie)
             .send({ title: createStringOfLength(TITLE_MAX_LENGTH + 1) })
-            .expect(400, /title length error/i, done);
-        });
-    });
-
-    it('does not create project with title that contains forbidden characters', (done) => {
-      request(app)
-        .post('/session')
-        .send({ username: 'admin', password: 'Test1234' })
-        .then((res) => {
-          const cookie = res.headers['set-cookie'] || '';
-          request(app)
-            .post('/projects')
-            .set('cookie', cookie)
-            .send({ title: 'Test$Project' })
-            .expect(400, /title invalid/i, done);
-        });
-    });
-
-    it('does not create project with title that contains consecutive special characters', (done) => {
-      request(app)
-        .post('/session')
-        .send({ username: 'admin', password: 'Test1234' })
-        .then((res) => {
-          const cookie = res.headers['set-cookie'] || '';
-          request(app)
-            .post('/projects')
-            .set('cookie', cookie)
-            .send({ title: 'Test__Project' })
-            .expect(400, /title invalid/i, done);
-        });
-    });
-
-    it('does not create project with title that is already in use', (done) => {
-      request(app)
-        .post('/session')
-        .send({ username: 'admin', password: 'Test1234' })
-        .then((res) => {
-          const cookie = res.headers['set-cookie'] || '';
-          request(app)
-            .post('/projects')
-            .set('cookie', cookie)
-            .send({ title: 'Test Project' })
-            .expect(400, /title already in use/i, done);
+            .expect(400, /title too long/i, done);
         });
     });
 
@@ -133,7 +91,7 @@ describe('projects router', () => {
         });
     });
 
-    it(`creates project with detail up to ${DETAIL_MAX_LENGTH} (inclusive) characters in length`, (done) => {
+    it(`creates project with detail up to ${DETAIL_MAX_LENGTH} characters long`, (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })

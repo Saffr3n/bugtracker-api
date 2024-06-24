@@ -1,13 +1,13 @@
 import passport from 'passport';
 import authenticate from '../middlewares/authenticate';
-import { LoginError, type ApiError } from '../utils/errors';
+import { AuthenticationError, type ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
 export const login = [
   (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate('local', (err?: ApiError, user?: UserDocument) => {
       if (err) return next(err);
-      if (!user) return next(new LoginError());
+      if (!user) return next(new AuthenticationError());
       res.locals.user = user;
       next();
     })(req, res, next);

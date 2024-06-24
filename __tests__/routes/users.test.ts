@@ -22,28 +22,42 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({ username: createStringOfLength(USERNAME_MIN_LENGTH - 1) })
-        .expect(400, /username length error/i, done);
+        .expect(400, /username too short/i, done);
     });
 
     it(`does not create user with username longer than ${USERNAME_MAX_LENGTH} characters`, (done) => {
       request(app)
         .post('/users')
         .send({ username: createStringOfLength(USERNAME_MAX_LENGTH + 1) })
-        .expect(400, /username length error/i, done);
+        .expect(400, /username too long/i, done);
     });
 
-    it('does not create user with username that contains forbidden characters', (done) => {
+    it('does not create user with username that does not start with letter', (done) => {
+      request(app)
+        .post('/users')
+        .send({ username: '7est' })
+        .expect(400, /username must start with letter/i, done);
+    });
+
+    it('does not create user with username that contains invalid characters', (done) => {
       request(app)
         .post('/users')
         .send({ username: 'te$t' })
-        .expect(400, /username invalid/i, done);
+        .expect(400, /username invalid characters error/i, done);
     });
 
     it('does not create user with username that contains consecutive special characters', (done) => {
       request(app)
         .post('/users')
         .send({ username: 'te__st' })
-        .expect(400, /username invalid/i, done);
+        .expect(400, /username consecutive characters error/i, done);
+    });
+
+    it('does not create user with username that does not end with letter or number', (done) => {
+      request(app)
+        .post('/users')
+        .send({ username: 'test_' })
+        .expect(400, /username must end with letter or number/i, done);
     });
 
     it('does not create user with username that is already in use', (done) => {
