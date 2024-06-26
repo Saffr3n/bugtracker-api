@@ -12,6 +12,7 @@ export const login = [
       next();
     })(req, res, next);
   },
+  
   authenticate()
 ];
 

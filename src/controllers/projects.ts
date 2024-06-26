@@ -1,7 +1,7 @@
 import { create } from '../services/projects';
 import { validateTitle, validateDetail } from '../validators/projects';
+import asyncHandler from '../middlewares/async-handler';
 import checkUserRole from '../middlewares/check-user-role';
-import { ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
 export const createProject = [
@@ -10,22 +10,15 @@ export const createProject = [
   validateTitle(),
   validateDetail(),
 
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const err = req.error;
-      if (err) return next(err);
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const project = await create({ ...req.body, manager: req.user!.id });
+    const json: SuccessResponseJson = {
+      status: 200,
+      title: 'Project Created',
+      detail: `Project ${project.title} with id ${project.id} was successfully created.`,
+      data: project.toJson()
+    };
 
-      const project = await create({ ...req.body, manager: req.user!.id });
-      const json: SuccessResponseJson = {
-        status: 200,
-        title: 'Project Created',
-        detail: `Project ${project.title} with id ${project.id} was successfully created.`,
-        data: project.toJson()
-      };
-
-      res.status(json.status).json(json);
-    } catch (err) {
-      next(new ApiError(err));
-    }
-  }
+    res.status(json.status).json(json);
+  })
 ];

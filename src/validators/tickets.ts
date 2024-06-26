@@ -1,8 +1,6 @@
 import { body } from 'express-validator';
-import { getById } from '../services/projects';
 import { passValidationError, capitalizeString } from '../utils';
 import {
-  ApiError,
   TicketTypeRequiredError,
   TicketTypeInvalidError,
   TicketPriorityRequiredError,
@@ -12,8 +10,7 @@ import {
   TitleTooLongError,
   DetailRequiredError,
   DetailTooLongError,
-  ProjectIDInvalidError,
-  ProjectNotFoundError
+  ProjectIDInvalidError
 } from '../utils/errors';
 import {
   TICKET_TYPES,
@@ -73,22 +70,4 @@ export const validateProject = () =>
     .trim()
     .isMongoId()
     .withMessage(passValidationError(new ProjectIDInvalidError()))
-    .bail({ level: 'request' })
-    .custom(async (id, { req }) => {
-      let project: ProjectDocument | null;
-
-      try {
-        project = await getById(id);
-      } catch (err) {
-        req.error = new ApiError(err);
-        return Promise.reject();
-      }
-
-      if (!project) {
-        req.error = new ProjectNotFoundError();
-        return Promise.reject();
-      }
-
-      return Promise.resolve();
-    })
     .bail({ level: 'request' });

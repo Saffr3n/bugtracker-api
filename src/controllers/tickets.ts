@@ -6,35 +6,28 @@ import {
   validateDetail,
   validateProject
 } from '../validators/tickets';
+import asyncHandler from '../middlewares/async-handler';
 import checkAuthentication from '../middlewares/check-authentication';
-import { ApiError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
 export const createTicket = [
   checkAuthentication(),
-  
+
   validateType(),
   validatePriority(),
   validateTitle(),
   validateDetail(),
   validateProject(),
 
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const err = req.error;
-      if (err) return next(err);
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const ticket = await create({ ...req.body, submitter: req.user!.id });
+    const json: SuccessResponseJson = {
+      status: 200,
+      title: 'Ticket Created',
+      detail: `Ticket ${ticket.title} with id ${ticket.id} was successfully created.`,
+      data: ticket.toJson()
+    };
 
-      const ticket = await create({ ...req.body, submitter: req.user!.id });
-      const json: SuccessResponseJson = {
-        status: 200,
-        title: 'Ticket Created',
-        detail: `Ticket ${ticket.title} with id ${ticket.id} was successfully created.`,
-        data: ticket.toJson()
-      };
-
-      res.status(json.status).json(json);
-    } catch (err) {
-      next(new ApiError(err));
-    }
-  }
+    res.status(json.status).json(json);
+  })
 ];
