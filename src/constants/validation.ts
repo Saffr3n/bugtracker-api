@@ -1,3 +1,8 @@
+export const LIMIT_MIN_VALUE = 1;
+export const LIMIT_MAX_VALUE = 100;
+
+export const PAGE_MIN_VALUE = 1;
+
 export const USERNAME_MIN_LENGTH = 3;
 export const USERNAME_MAX_LENGTH = 24;
 

@@ -1,9 +1,9 @@
 import Project from '../models/project';
 import { stringToCaseInsensitiveRegex } from '../utils';
 
-type CreateProjectData = Pick<ProjectDocument, 'title' | 'detail' | 'manager'>;
+type CreationData = Pick<ProjectDocument, 'title' | 'detail' | 'manager'>;
 
-export const create = (data: CreateProjectData) => {
+export const create = (data: CreationData) => {
   return Project.create(data);
 };
 

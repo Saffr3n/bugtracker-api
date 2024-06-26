@@ -81,3 +81,11 @@ declare module 'express-validator/lib/base' {
     error?: ApiError;
   }
 }
+
+declare module 'qs' {
+  interface ParsedQs {
+    limit?: number;
+    page?: number;
+    sort?: string;
+  }
+}

@@ -1,4 +1,7 @@
 import {
+  LIMIT_MIN_VALUE,
+  LIMIT_MAX_VALUE,
+  PAGE_MIN_VALUE,
   USERNAME_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
@@ -116,6 +119,60 @@ export abstract class ValidationError extends ClientError {
   public override readonly status: number = 400;
 }
 
+export class LimitInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided "limit" URL parameter is invalid. It must be an integer. Please provide a limit that meets this requirement.',
+      true
+    );
+  }
+}
+
+export class LimitTooLowError extends ValidationError {
+  public constructor() {
+    super(
+      `The provided "limit" URL parameter is invalid. It must be an integer starting from ${LIMIT_MIN_VALUE}. Please provide a limit that meets this requirement.`,
+      true
+    );
+  }
+}
+
+export class LimitTooHighError extends ValidationError {
+  public constructor() {
+    super(
+      `The provided "limit" URL parameter is invalid. It must be an integer up to ${LIMIT_MAX_VALUE}. Please provide a limit that meets this requirement.`,
+      true
+    );
+  }
+}
+
+export class PageInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided "page" URL parameter is invalid. It must be an integer. Please provide a page number that meets this requirement.',
+      true
+    );
+  }
+}
+
+export class PageTooLowError extends ValidationError {
+  public constructor() {
+    super(
+      `The provided "page" URL parameter is invalid. It must be an integer starting from ${PAGE_MIN_VALUE}. Please provide a page number that meets this requirement.`,
+      true
+    );
+  }
+}
+
+export class SortInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided "sort" URL parameter is invalid. It must contain only valid keys for the requested document. Please check the correctness of the keys and try again.',
+      true
+    );
+  }
+}
+
 export class UsernameRequiredError extends ValidationError {
   public constructor() {
     super(
@@ -143,11 +200,10 @@ export class UsernameTooLongError extends ValidationError {
   }
 }
 
-export class UsernameMustStartWithLetterError extends ValidationError {
+export class UsernameStartError extends ValidationError {
   public constructor() {
     super(
-      'The provided username is invalid. It must start with a Latin letter. Please choose a username that meets this requirement.',
-      true
+      'The provided username is invalid. It must start with a Latin letter. Please choose a username that meets this requirement.'
     );
   }
 }
@@ -168,11 +224,10 @@ export class UsernameConsecutiveCharactersError extends ValidationError {
   }
 }
 
-export class UsernameMustEndWithLetterOrNumberError extends ValidationError {
+export class UsernameEndError extends ValidationError {
   public constructor() {
     super(
-      'The provided username is invalid. It must end with a Latin letter or number. Please choose a username that meets this requirement.',
-      true
+      'The provided username is invalid. It must end with a Latin letter or number. Please choose a username that meets this requirement.'
     );
   }
 }
@@ -350,13 +405,22 @@ export const clientErrors = {
   UnauthenticatedError,
   AuthenticationError,
 
+  LimitInvalidError,
+  LimitTooLowError,
+  LimitTooHighError,
+
+  PageInvalidError,
+  PageTooLowError,
+
+  SortInvalidError,
+
   UsernameRequiredError,
   UsernameTooShortError,
   UsernameTooLongError,
-  UsernameMustStartWithLetterError,
+  UsernameStartError,
   UsernameInvalidCharactersError,
   UsernameConsecutiveCharactersError,
-  UsernameMustEndWithLetterOrNumberError,
+  UsernameEndError,
   UsernameAlreadyInUseError,
 
   EmailRequiredError,

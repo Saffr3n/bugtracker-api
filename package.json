@@ -1,6 +1,6 @@
 {
   "name": "bugtracker-api",
-  "version": "0.20.1",
+  "version": "0.21.0",
   "description": "API for BugTracker app",
   "private": "true",
   "scripts": {
@@ -24,7 +24,7 @@
     "express-session": "^1.18.0",
     "express-validator": "^7.1.0",
     "mongodb": "6.6.2",
-    "mongoose": "^8.4.3",
+    "mongoose": "^8.4.4",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0"
@@ -35,7 +35,7 @@
     "@types/express-session": "^1.18.0",
     "@types/jest": "^29.5.12",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^20.14.8",
+    "@types/node": "^20.14.9",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^6.0.2",

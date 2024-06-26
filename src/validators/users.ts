@@ -6,10 +6,10 @@ import {
   UsernameRequiredError,
   UsernameTooShortError,
   UsernameTooLongError,
-  UsernameMustStartWithLetterError,
+  UsernameStartError,
   UsernameInvalidCharactersError,
   UsernameConsecutiveCharactersError,
-  UsernameMustEndWithLetterOrNumberError,
+  UsernameEndError,
   UsernameAlreadyInUseError,
   EmailRequiredError,
   EmailInvalidError,
@@ -43,7 +43,7 @@ export const validateUsername = () =>
       const startsWithLetter = regex.test(firstLetter);
 
       if (!startsWithLetter) {
-        req.error = new UsernameMustStartWithLetterError();
+        req.error = new UsernameStartError();
       }
 
       return startsWithLetter;
@@ -61,7 +61,7 @@ export const validateUsername = () =>
       const endsWithLetterOrNumber = regex.test(lastLetter);
 
       if (!endsWithLetterOrNumber) {
-        req.error = new UsernameMustEndWithLetterOrNumberError();
+        req.error = new UsernameEndError();
       }
 
       return endsWithLetterOrNumber;

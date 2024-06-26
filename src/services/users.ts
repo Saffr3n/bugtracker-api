@@ -1,15 +1,22 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user';
 import { stringToCaseInsensitiveRegex } from '../utils';
+import type { ParsedQs } from 'qs';
 
-interface CreateUserData extends Pick<UserDocument, 'username' | 'email'> {
+interface CreationData extends Pick<UserDocument, 'username' | 'email'> {
   password: string;
 }
 
-export const create = async (data: CreateUserData) => {
+export const create = async (data: CreationData) => {
   const { username, email, password } = data;
   const hash = await bcrypt.hash(password, 12);
   return await User.create({ username, email, hash });
+};
+
+export const getAll = (options: ParsedQs) => {
+  const { limit = 20, page = 1, sort } = options;
+  const skip = limit * (page - 1);
+  return User.find({}, {}, { limit, skip, sort }).exec();
 };
 
 export const getById = (id: string) => {

@@ -36,7 +36,7 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({ username: '7est' })
-        .expect(400, /username must start with letter/i, done);
+        .expect(400, /username start error/i, done);
     });
 
     it('does not create user with username that contains invalid characters', (done) => {
@@ -57,7 +57,7 @@ describe('user router', () => {
       request(app)
         .post('/users')
         .send({ username: 'test_' })
-        .expect(400, /username must end with letter or number/i, done);
+        .expect(400, /username end error/i, done);
     });
 
     it('does not create user with username that is already in use', (done) => {
