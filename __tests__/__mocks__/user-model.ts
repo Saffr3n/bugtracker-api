@@ -1,7 +1,20 @@
 import User from '../../src/models/user';
 import mockDb from './db';
+import { LIMIT_DEFAULT_VALUE } from '../../src/constants/validation';
 
 export default () => {
+  jest.spyOn(User, 'find').mockImplementation(() => {
+    const users: UserDocument[] = [];
+
+    for (let i = 0; i < LIMIT_DEFAULT_VALUE; i++) {
+      users.push(mockDb.users[i]!);
+    }
+
+    return {
+      exec: () => Promise.resolve(users)
+    } as any;
+  });
+
   jest.spyOn(User, 'findById').mockImplementation((id) => {
     return {
       exec: () => Promise.resolve(mockDb.users.find((user) => user.id === id))

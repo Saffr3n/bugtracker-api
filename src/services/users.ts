@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user';
 import { stringToCaseInsensitiveRegex } from '../utils';
+import { LIMIT_DEFAULT_VALUE } from '../constants/validation';
 import type { ParsedQs } from 'qs';
 
 interface CreationData extends Pick<UserDocument, 'username' | 'email'> {
@@ -14,7 +15,7 @@ export const create = async (data: CreationData) => {
 };
 
 export const getAll = (options: ParsedQs) => {
-  const { limit = 20, page = 1, sort } = options;
+  const { limit = LIMIT_DEFAULT_VALUE, page = 1, sort } = options;
   const skip = limit * (page - 1);
   return User.find({}, {}, { limit, skip, sort }).exec();
 };

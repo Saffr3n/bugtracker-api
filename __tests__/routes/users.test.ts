@@ -1,11 +1,17 @@
 import request from 'supertest';
+import { ObjectId } from 'mongodb';
 import app from '../__mocks__/app';
 import mockUserModel from '../__mocks__/user-model';
+import mockDb from '../__mocks__/db';
 import { createStringOfLength } from '../__utils__';
 import {
   USERNAME_MIN_LENGTH,
   USERNAME_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH
+  PASSWORD_MIN_LENGTH,
+  LIMIT_MIN_VALUE,
+  LIMIT_MAX_VALUE,
+  LIMIT_DEFAULT_VALUE,
+  PAGE_MIN_VALUE
 } from '../../src/constants/validation';
 
 mockUserModel();
@@ -160,6 +166,102 @@ describe('user router', () => {
           confirm: 'Test1234'
         })
         .expect(200, /user created/i, done);
+    });
+  });
+
+  describe('GET /users (get all users)', () => {
+    it('does not get users with invalid "limit" url parameter', (done) => {
+      request(app)
+        .get('/users?limit=invalid')
+        .expect(400, /limit invalid/i, done);
+    });
+
+    it(`does not get users with "limit" url parameter being less than ${LIMIT_MIN_VALUE}`, (done) => {
+      request(app)
+        .get(`/users?limit=${LIMIT_MIN_VALUE - 1}`)
+        .expect(400, /limit too low/i, done);
+    });
+
+    it(`does not get users with "limit" url parameter being more than ${LIMIT_MAX_VALUE}`, (done) => {
+      request(app)
+        .get(`/users?limit=${LIMIT_MAX_VALUE + 1}`)
+        .expect(400, /limit too high/i, done);
+    });
+
+    it('does not get users with invalid "page" url parameter', (done) => {
+      request(app)
+        .get('/users?page=invalid')
+        .expect(400, /page invalid/i, done);
+    });
+
+    it(`does not get users with "page" url parameter being less than ${PAGE_MIN_VALUE}`, (done) => {
+      request(app)
+        .get(`/users?page=${PAGE_MIN_VALUE - 1}`)
+        .expect(400, /page too low/i, done);
+    });
+
+    it('does not get users with invalid "sort" url parameter', (done) => {
+      request(app)
+        .get('/users?sort=invalid')
+        .expect(400, /sort invalid/i, done);
+    });
+
+    it(`gets ${LIMIT_DEFAULT_VALUE} users without "limit" url parameter`, (done) => {
+      request(app)
+        .get('/users')
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          expect(res.body.data).toHaveLength(LIMIT_DEFAULT_VALUE);
+          return done();
+        });
+    });
+
+    it('gets users with valid url parameters or without any', (done) => {
+      request(app)
+        .get('/users')
+        .expect(200, /users retrieved/i, done);
+
+      request(app)
+        .get('/users?limit=10&page=2&sort=id')
+        .expect(200, /users retrieved/i, done);
+    });
+  });
+
+  describe('GET /users/:userId (get user by id)', () => {
+    it('does not get user with invalid userId', (done) => {
+      request(app)
+        .get('/users/invalid')
+        .expect(400, /user id invalid/i, done);
+    });
+
+    it('does not get non-existent user', (done) => {
+      request(app)
+        .get(`/users/${new ObjectId()}`)
+        .expect(404, /user not found/i, done);
+    });
+
+    it('gets user with valid userId and includes email only if requesting self', (done) => {
+      request(app)
+        .get(`/users/${mockDb.users[0]!.id}`)
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.email).toBeUndefined();
+        });
+
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .get(`/users/${mockDb.users[0]!.id}`)
+            .set('cookie', cookie)
+            .expect(200, (err, res) => {
+              if (err) return done(err);
+              expect(res.body.data.email).toBeDefined();
+              return done();
+            });
+        });
     });
   });
 });

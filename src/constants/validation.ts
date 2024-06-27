@@ -1,5 +1,6 @@
 export const LIMIT_MIN_VALUE = 1;
 export const LIMIT_MAX_VALUE = 100;
+export const LIMIT_DEFAULT_VALUE = 20;
 
 export const PAGE_MIN_VALUE = 1;
 
