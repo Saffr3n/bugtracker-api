@@ -8,7 +8,7 @@ import {
 } from '../validators/tickets';
 import asyncHandler from '../middlewares/async-handler';
 import checkAuthentication from '../middlewares/check-authentication';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 
 export const createTicket = [
   checkAuthentication(),
@@ -19,7 +19,7 @@ export const createTicket = [
   validateDetail(),
   validateProject(),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const ticket = await create({ ...req.body, submitter: req.user!.id });
     const json: SuccessResponseJson = {
       status: 200,

@@ -2,7 +2,7 @@ import { create } from '../services/projects';
 import { validateTitle, validateDetail } from '../validators/projects';
 import asyncHandler from '../middlewares/async-handler';
 import checkUserRole from '../middlewares/check-user-role';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 
 export const createProject = [
   checkUserRole('Project Manager'),
@@ -10,7 +10,7 @@ export const createProject = [
   validateTitle(),
   validateDetail(),
 
-  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const project = await create({ ...req.body, manager: req.user!.id });
     const json: SuccessResponseJson = {
       status: 200,

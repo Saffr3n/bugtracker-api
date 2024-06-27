@@ -61,6 +61,16 @@ export class InternalServerError extends ClientError {
   }
 }
 
+export class UserNotFoundError extends ClientError {
+  public override readonly status: number = 404;
+
+  public constructor() {
+    super(
+      'The user with provided ID could not be found. They either do not exist or their ID is misspelled. Please check the user ID correctness and try again.'
+    );
+  }
+}
+
 export class ProjectNotFoundError extends ClientError {
   public override readonly status: number = 404;
 
@@ -388,6 +398,15 @@ export class TicketPriorityInvalidError extends ValidationError {
   }
 }
 
+export class UserIDInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      'The provided user ID is invalid. Please check the user ID correctness and try again.',
+      true
+    );
+  }
+}
+
 export class ProjectIDInvalidError extends ValidationError {
   public constructor() {
     super(
@@ -399,7 +418,10 @@ export class ProjectIDInvalidError extends ValidationError {
 
 export const clientErrors = {
   InternalServerError,
+
+  UserNotFoundError,
   ProjectNotFoundError,
+
   PathNotFoundError,
   AccessDeniedError,
   UnauthenticatedError,
@@ -445,5 +467,6 @@ export const clientErrors = {
   TicketPriorityRequiredError,
   TicketPriorityInvalidError,
 
+  UserIDInvalidError,
   ProjectIDInvalidError
 };

@@ -1,8 +1,9 @@
-import { body } from 'express-validator';
+import { param, body } from 'express-validator';
 import { getByUsername, getByEmail } from '../services/users';
 import { passValidationError } from '../utils';
 import {
   ApiError,
+  UserIDInvalidError,
   UsernameRequiredError,
   UsernameTooShortError,
   UsernameTooLongError,
@@ -24,6 +25,13 @@ import {
   USERNAME_MAX_LENGTH,
   PASSWORD_MIN_LENGTH
 } from '../constants/validation';
+
+export const validateUserId = () =>
+  param('userId')
+    .trim()
+    .isMongoId()
+    .withMessage(passValidationError(new UserIDInvalidError()))
+    .bail({ level: 'request' });
 
 export const validateUsername = () =>
   body('username')
