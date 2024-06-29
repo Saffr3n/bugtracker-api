@@ -1,29 +1,25 @@
 import Project from '../../src/models/project';
-import mockDb from './db';
+import type { MockDB } from './db';
 
-export default () => {
+export default (db: MockDB) => {
   jest.spyOn(Project, 'findById').mockImplementation((id) => {
-    return {
-      exec: () =>
-        Promise.resolve(mockDb.projects.find((proj) => proj.id === id))
-    } as any;
+    const project = db.projects.find((proj) => proj.id === id);
+    return { exec: () => Promise.resolve(project) } as any;
   });
 
   jest.spyOn(Project, 'findOne').mockImplementation((filter) => {
     const { title } = filter!;
-    const findCb = (project: ProjectDocument) => {
+    const project = db.projects.find((project) => {
       const regex: RegExp = title;
       return regex.test(project.title);
-    };
+    });
 
-    return {
-      exec: () => Promise.resolve(mockDb.projects.find(findCb))
-    } as any;
+    return { exec: () => Promise.resolve(project) } as any;
   });
 
   jest.spyOn(Project, 'create').mockImplementation((data) => {
     const project = new Project(data);
-    mockDb.projects.push(project);
+    db.projects.push(project);
     return Promise.resolve(project) as any;
   });
 };

@@ -1,6 +1,6 @@
 {
   "name": "bugtracker-api",
-  "version": "0.25.1",
+  "version": "0.26.0",
   "description": "API for BugTracker app",
   "private": "true",
   "scripts": {

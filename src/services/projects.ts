@@ -1,7 +1,7 @@
 import Project from '../models/project';
 import { stringToCaseInsensitiveRegex } from '../utils';
 
-type CreationData = Pick<ProjectDocument, 'title' | 'detail' | 'manager'>;
+type CreationData = Pick<ProjectRaw, 'title' | 'detail' | 'manager'>;
 
 export const create = (data: CreationData) => {
   return Project.create(data);

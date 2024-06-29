@@ -1,7 +1,7 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
+import { ObjectId } from 'mongodb';
 import app from '../__mocks__/app';
-import mockDb from '../__mocks__/db';
+import mockDb, { type MockDB } from '../__mocks__/db';
 import mockUserModel from '../__mocks__/user-model';
 import mockProjectModel from '../__mocks__/project-model';
 import mockTicketModel from '../__mocks__/ticket-model';
@@ -12,11 +12,16 @@ import {
   DETAIL_MAX_LENGTH
 } from '../../src/constants/validation';
 
-mockUserModel();
-mockProjectModel();
-mockTicketModel();
-
 describe('tickets router', () => {
+  let db: MockDB;
+
+  beforeEach(() => {
+    db = mockDb();
+    mockUserModel(db);
+    mockProjectModel(db);
+    mockTicketModel(db);
+  });
+
   describe('POST /tickets (create ticket)', () => {
     it('does not create ticket without active session', (done) => {
       request(app)
@@ -200,13 +205,15 @@ describe('tickets router', () => {
               priority: 'high',
               title: 'Test Ticket',
               detail: 'Test detail...',
-              project: new mongoose.Types.ObjectId()
+              project: new ObjectId()
             })
             .expect(404, /project not found/i, done);
         });
     });
 
     it('creates ticket with valid data', (done) => {
+      const { id } = db.projects[0]!;
+
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
@@ -220,7 +227,7 @@ describe('tickets router', () => {
               priority: 'high',
               title: 'Test Ticket',
               detail: 'Test detail...',
-              project: mockDb.projects[0]!.id
+              project: id
             })
             .expect(200, /ticket created/i, done);
         });

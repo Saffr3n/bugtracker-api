@@ -17,7 +17,7 @@ export interface UserJson extends UserCommon, DocumentJson {
   createDate: string;
 }
 
-interface UserRaw extends UserCommon, DocumentRaw {
+export interface UserRaw extends UserCommon, DocumentRaw {
   email: string;
   hash: string;
   createDate: Date;

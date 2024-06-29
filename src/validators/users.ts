@@ -54,7 +54,7 @@ export const validateUsername = (optional: boolean = false) => {
     .isLength({ max: USERNAME_MAX_LENGTH })
     .withMessage(passValidationError(new UsernameTooLongError()))
     .bail({ level: 'request' })
-    .custom((username) => /[a-z]/i.test(username[0]))
+    .custom((username: string) => /[a-z]/i.test(username[0]!))
     .withMessage(passValidationError(new UsernameStartError()))
     .bail({ level: 'request' })
     .matches(/^[a-z0-9._-]*$/i)
@@ -63,10 +63,12 @@ export const validateUsername = (optional: boolean = false) => {
     .matches(/(?!.*[._-]{2,})^.*$/)
     .withMessage(passValidationError(new UsernameConsecutiveCharactersError()))
     .bail({ level: 'request' })
-    .custom((username) => /[a-z0-9]/i.test(username[username.length - 1]))
+    .custom((username: string) =>
+      /[a-z0-9]/i.test(username[username.length - 1]!)
+    )
     .withMessage(passValidationError(new UsernameEndError()))
     .bail({ level: 'request' })
-    .custom(async (username, { req }) => {
+    .custom(async (username: string, { req }) => {
       let user: UserDocument | null | undefined;
       let error: ApiError | undefined;
 
@@ -101,7 +103,7 @@ export const validateEmail = (optional: boolean = false) => {
     .isEmail()
     .withMessage(passValidationError(new EmailInvalidError()))
     .bail({ level: 'request' })
-    .custom(async (email, { req }) => {
+    .custom(async (email: string, { req }) => {
       let user: UserDocument | null | undefined;
       let error: ApiError | undefined;
 
@@ -139,7 +141,7 @@ export const validatePassword = (optional: boolean = false) => {
     .matches(/(?=.*[A-Z])(?=.*[a-z])(?=.*\d)^.*$/)
     .withMessage(passValidationError(new PasswordInvalidError()))
     .bail({ level: 'request' })
-    .custom((password, { req }) => password === req.body.confirm)
+    .custom((password: string, { req }) => password === req.body.confirm)
     .withMessage(passValidationError(new PasswordConfirmationError()))
     .bail({ level: 'request' });
 

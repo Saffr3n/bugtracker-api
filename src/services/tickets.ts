@@ -3,7 +3,7 @@ import Project from '../models/project';
 import { ProjectNotFoundError } from '../utils/errors';
 
 type CreationData = Pick<
-  TicketDocument,
+  TicketRaw,
   'type' | 'title' | 'detail' | 'project' | 'submitter'
 >;
 

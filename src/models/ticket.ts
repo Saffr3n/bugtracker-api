@@ -28,7 +28,7 @@ export interface TicketJson extends TicketCommon, DocumentJson {
   createDate: string;
 }
 
-interface TicketRaw extends TicketCommon, DocumentRaw {
+export interface TicketRaw extends TicketCommon, DocumentRaw {
   project: mongoose.Types.ObjectId | ProjectDocument;
   submitter: mongoose.Types.ObjectId | UserDocument;
   developers: (mongoose.Types.ObjectId | UserDocument)[];

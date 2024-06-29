@@ -4,12 +4,12 @@ import { stringToCaseInsensitiveRegex } from '../utils';
 import { LIMIT_DEFAULT_VALUE } from '../constants/validation';
 import type { ParsedQs } from 'qs';
 
-interface CreationData extends Pick<UserDocument, 'username' | 'email'> {
+interface CreationData extends Pick<UserRaw, 'username' | 'email'> {
   password: string;
 }
 
 interface EditionData
-  extends Partial<Pick<UserDocument, 'username' | 'email' | 'role'>> {
+  extends Partial<Pick<UserRaw, 'username' | 'email' | 'role'>> {
   newPassword?: string;
 }
 

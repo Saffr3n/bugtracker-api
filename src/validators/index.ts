@@ -48,7 +48,7 @@ export const validateSort = <T, U extends { toJson(): Record<string, any> }, V>(
   query('sort')
     .optional()
     .trim()
-    .custom((sort: string, { req }) => {
+    .custom((sort: string) => {
       const docKeys = Object.keys(new model().toJson());
       const sortKeys = sort.replaceAll('-', '').split(' ');
       return sortKeys.every((key) => docKeys.includes(key));

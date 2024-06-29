@@ -1,10 +1,10 @@
 import Ticket from '../../src/models/ticket';
-import mockDb from './db';
+import type { MockDB } from './db';
 
-export default () => {
+export default (db: MockDB) => {
   jest.spyOn(Ticket, 'create').mockImplementation((data) => {
     const ticket = new Ticket(data);
-    mockDb.tickets.push(ticket);
+    db.tickets.push(ticket);
     return Promise.resolve(ticket) as any;
   });
 };

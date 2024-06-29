@@ -1,13 +1,19 @@
 import type { Document as Doc } from 'mongoose';
 import type { MongoClient } from 'mongodb';
-import type { UserDocument as UDoc, UserJson as UJson } from './models/user';
+import type {
+  UserDocument as UDoc,
+  UserJson as UJson,
+  UserRaw as URaw
+} from './models/user';
 import type {
   ProjectDocument as PDoc,
-  ProjectJson as PJson
+  ProjectJson as PJson,
+  ProjectRaw as PRaw
 } from './models/project';
 import type {
   TicketDocument as TDoc,
-  TicketJson as TJson
+  TicketJson as TJson,
+  TicketRaw as TRaw
 } from './models/ticket';
 import type { ApiError } from './utils/errors';
 import {
@@ -53,15 +59,18 @@ declare global {
   type UserRole = keyof typeof USER_ROLES;
   type UserDocument = UDoc;
   type UserJson = UJson;
+  type UserRaw = URaw;
 
   type ProjectDocument = PDoc;
   type ProjectJson = PJson;
+  type ProjectRaw = PRaw;
 
   type TicketType = (typeof TICKET_TYPES)[number];
   type TicketStatus = (typeof TICKET_STATUSES)[number];
   type TicketPriority = (typeof TICKET_PRIORITIES)[number];
   type TicketDocument = TDoc;
   type TicketJson = TJson;
+  type TicketRaw = TRaw;
 
   namespace Express {
     interface Request {

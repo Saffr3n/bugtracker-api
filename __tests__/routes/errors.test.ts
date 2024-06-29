@@ -2,7 +2,7 @@ import request from 'supertest';
 import { PathNotFoundError } from '../../src/utils/errors';
 import app from '../__mocks__/app';
 
-describe('GET /errors/:name (get error info by its name)', () => {
+describe('GET /errors/:errorName (get error info by its name)', () => {
   it('responds with 404 if error not found', (done) => {
     request(app)
       .get('/errors/non-existing-error')

@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { ObjectId } from 'mongodb';
 import app from '../__mocks__/app';
+import mockDb, { type MockDB } from '../__mocks__/db';
 import mockUserModel from '../__mocks__/user-model';
-import mockDb from '../__mocks__/db';
 import { createStringOfLength } from '../__utils__';
 import {
   USERNAME_MIN_LENGTH,
@@ -14,9 +14,14 @@ import {
   PAGE_MIN_VALUE
 } from '../../src/constants/validation';
 
-mockUserModel();
-
 describe('user router', () => {
+  let db: MockDB;
+
+  beforeEach(() => {
+    db = mockDb();
+    mockUserModel(db);
+  });
+
   describe('POST /users (create user)', () => {
     it('does not create user without username', (done) => {
       request(app)
@@ -241,8 +246,10 @@ describe('user router', () => {
     });
 
     it('gets user with valid userId and includes email only if requesting self', (done) => {
+      const { id } = db.users[0]!;
+
       request(app)
-        .get(`/users/${mockDb.users[0]!.id}`)
+        .get(`/users/${id}`)
         .expect(200, (err, res) => {
           if (err) return done(err);
           expect(res.body.data.email).toBeUndefined();
@@ -254,11 +261,124 @@ describe('user router', () => {
         .then((res) => {
           const cookie = res.headers['set-cookie'] || '';
           request(app)
-            .get(`/users/${mockDb.users[0]!.id}`)
+            .get(`/users/${id}`)
             .set('cookie', cookie)
             .expect(200, (err, res) => {
               if (err) return done(err);
               expect(res.body.data.email).toBeDefined();
+              return done();
+            });
+        });
+    });
+  });
+
+  describe('PUT /users/:userId (get user by id and edit)', () => {
+    it('does not edit user without active session', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .put(`/users/${id}`)
+        .expect(401, /unauthenticated/i, done);
+    });
+
+    it('does not edit user if requester is not the user', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_2', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .expect(403, /access denied/i, done);
+        });
+    });
+
+    it('does not edit user with incorrect password', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'incorrect' })
+            .expect(403, /access denied/i, done);
+        });
+    });
+
+    it('does not edit user with invalid user role', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', role: 'invalid' })
+            .expect(400, /user role invalid/i, done);
+        });
+    });
+
+    it('does not let non-admin users edit user role', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', role: 'Admin' })
+            .expect(403, /access denied/i, done);
+        });
+    });
+
+    it('lets admin edit user role', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', role: 'Admin' })
+            .expect(200, (err, res) => {
+              if (err) return done(err);
+              expect(res.body.data.role).toBe('Admin');
+              return done();
+            });
+        });
+    });
+
+    it('edits authorized user', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', username: 'Test' })
+            .expect(200, (err, res) => {
+              if (err) return done(err);
+              expect(res.body.data.username).toBe('Test');
               return done();
             });
         });

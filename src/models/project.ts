@@ -18,7 +18,7 @@ export interface ProjectJson extends ProjectCommon, DocumentJson {
   createDate: string;
 }
 
-interface ProjectRaw extends ProjectCommon, DocumentRaw {
+export interface ProjectRaw extends ProjectCommon, DocumentRaw {
   manager: mongoose.Types.ObjectId | UserDocument;
   developers: (mongoose.Types.ObjectId | UserDocument)[];
   createDate: Date;

@@ -48,7 +48,7 @@ for (let i = 0; i < AMOUNT_OF_USERS; i++) {
   );
 }
 
-export default {
+const mockDb = () => ({
   users: [admin, ...managers, ...developers, ...users],
 
   projects: [
@@ -60,4 +60,7 @@ export default {
   ],
 
   tickets: [] as TicketDocument[]
-};
+});
+
+export type MockDB = ReturnType<typeof mockDb>;
+export default mockDb;

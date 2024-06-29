@@ -1,5 +1,6 @@
 import request from 'supertest';
 import app from '../__mocks__/app';
+import mockDb from '../__mocks__/db';
 import mockUserModel from '../__mocks__/user-model';
 import mockProjectModel from '../__mocks__/project-model';
 import { createStringOfLength } from '../__utils__';
@@ -9,10 +10,13 @@ import {
   DETAIL_MAX_LENGTH
 } from '../../src/constants/validation';
 
-mockUserModel();
-mockProjectModel();
-
 describe('projects router', () => {
+  beforeEach(() => {
+    const db = mockDb();
+    mockUserModel(db);
+    mockProjectModel(db);
+  });
+
   describe('POST /projects (create project)', () => {
     it('does not create project without active session', (done) => {
       request(app)
@@ -84,7 +88,7 @@ describe('projects router', () => {
             .post('/projects')
             .set('cookie', cookie)
             .send({
-              title: 'Test Project 2',
+              title: 'Test Project',
               detail: createStringOfLength(DETAIL_MAX_LENGTH + 1)
             })
             .expect(400, /detail too long/i, done);
@@ -101,7 +105,7 @@ describe('projects router', () => {
             .post('/projects')
             .set('cookie', cookie)
             .send({
-              title: 'Test Project 2',
+              title: 'Test Project',
               detail: createStringOfLength(DETAIL_MAX_LENGTH)
             })
             .expect(200, /project created/i, done);
@@ -117,7 +121,7 @@ describe('projects router', () => {
           request(app)
             .post('/projects')
             .set('cookie', cookie)
-            .send({ title: 'Test Project 3' })
+            .send({ title: 'Test Project' })
             .expect(200, /project created/i, done);
         });
     });
