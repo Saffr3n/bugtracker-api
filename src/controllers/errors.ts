@@ -6,7 +6,7 @@ type ClientErrorName = keyof typeof clientErrors;
 
 export const getError = (req: Request, res: Response, next: NextFunction) => {
   const errNames = Object.keys(clientErrors) as ClientErrorName[];
-  const errName = req.params.name!.replaceAll('-', '');
+  const errName = req.params.errorName!.replaceAll('-', '');
   const regex = stringToCaseInsensitiveRegex(errName, false);
   const match = errNames.find((name) => regex.test(name));
   if (!match) return next();

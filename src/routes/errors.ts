@@ -3,6 +3,6 @@ import { getError } from '../controllers/errors';
 
 const errorsRouter = express.Router();
 
-errorsRouter.get('/:name', getError);
+errorsRouter.get('/:errorName', getError);
 
 export default errorsRouter;

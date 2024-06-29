@@ -1,11 +1,11 @@
 import { create } from '../services/projects';
 import { validateTitle, validateDetail } from '../validators/projects';
 import asyncHandler from '../middlewares/async-handler';
-import checkUserRole from '../middlewares/check-user-role';
+import isAuthenticated from '../middlewares/authorization';
 import type { Request, Response } from 'express';
 
 export const createProject = [
-  checkUserRole('Project Manager'),
+  isAuthenticated().isRole('Project Manager'),
 
   validateTitle(),
   validateDetail(),
