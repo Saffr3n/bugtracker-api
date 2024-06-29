@@ -8,6 +8,11 @@ interface CreationData extends Pick<UserDocument, 'username' | 'email'> {
   password: string;
 }
 
+interface EditionData
+  extends Partial<Pick<UserDocument, 'username' | 'email' | 'role'>> {
+  newPassword?: string;
+}
+
 export const create = async (data: CreationData) => {
   const { username, email, password } = data;
   const hash = await bcrypt.hash(password, 12);
@@ -37,4 +42,16 @@ export const getByEmail = (email: string) => {
 export const getByUsernameOrEmail = (usernameOrEmail: string) => {
   const regex = stringToCaseInsensitiveRegex(usernameOrEmail);
   return User.findOne({ $or: [{ username: regex }, { email: regex }] }).exec();
+};
+
+export const getByIdAndEdit = async (id: string, data: EditionData) => {
+  const { username, email, role, newPassword } = data;
+  const update = {
+    username,
+    email,
+    role,
+    hash: newPassword && (await bcrypt.hash(newPassword, 12))
+  };
+
+  return await User.findByIdAndUpdate(id, update, { new: true }).exec();
 };

@@ -8,6 +8,7 @@ import {
   TITLE_MIN_LENGTH,
   TITLE_MAX_LENGTH,
   DETAIL_MAX_LENGTH,
+  USER_ROLES,
   TICKET_TYPES,
   TICKET_PRIORITIES
 } from '../constants/validation';
@@ -17,7 +18,9 @@ export class ApiError extends Error {
     const message = reason.message || reason;
     super(message);
     this.name = reason.name || this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
+    reason.stack
+      ? (this.stack = reason.stack)
+      : Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -98,7 +101,7 @@ export class AccessDeniedError extends ClientError {
 
   public constructor() {
     super(
-      'Not enough privileges to access the requested path. Please contact your supervisor or administrator to elevate your user role.',
+      'Access to the requested path was denied. Either the action you are trying to perform is not allowed, or you do not have sufficient privileges. Please contact your supervisor or administrator to elevate your user role if necessary.',
       true
     );
   }
@@ -358,6 +361,19 @@ export class DetailTooLongError extends ValidationError {
   }
 }
 
+export class UserRoleInvalidError extends ValidationError {
+  public constructor() {
+    super(
+      `The provided user role is invalid. It can only be one of the following values: ${Object.keys(
+        USER_ROLES
+      )
+        .filter((key) => isNaN(+key))
+        .join(', ')}. Please choose one of the available roles.`,
+      true
+    );
+  }
+}
+
 export class TicketTypeRequiredError extends ValidationError {
   public constructor() {
     super(
@@ -416,7 +432,12 @@ export class ProjectIDInvalidError extends ValidationError {
   }
 }
 
-export const clientErrors = {
+type ClientErrors = Omit<
+  typeof import('./errors'),
+  'ApiError' | 'ClientError' | 'ValidationError' | 'clientErrors'
+>;
+
+export const clientErrors: ClientErrors = {
   InternalServerError,
 
   UserNotFoundError,
@@ -460,6 +481,8 @@ export const clientErrors = {
 
   DetailRequiredError,
   DetailTooLongError,
+
+  UserRoleInvalidError,
 
   TicketTypeRequiredError,
   TicketTypeInvalidError,
