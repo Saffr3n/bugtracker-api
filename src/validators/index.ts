@@ -51,13 +51,8 @@ export const validateSort = <T, U extends { toJson(): Record<string, any> }, V>(
     .custom((sort: string, { req }) => {
       const docKeys = Object.keys(new model().toJson());
       const sortKeys = sort.replaceAll('-', '').split(' ');
-      const valid = sortKeys.every((key) => docKeys.includes(key));
-
-      if (!valid) {
-        req.error = new SortInvalidError();
-      }
-
-      return valid;
+      return sortKeys.every((key) => docKeys.includes(key));
     })
+    .withMessage(passValidationError(new SortInvalidError()))
     .bail({ level: 'request' })
     .customSanitizer((sort: string) => sort.replaceAll(/(id|url)/g, '_id'));

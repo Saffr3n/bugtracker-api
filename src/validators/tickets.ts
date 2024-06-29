@@ -26,7 +26,8 @@ export const validateType = () =>
     .notEmpty()
     .withMessage(passValidationError(new TicketTypeRequiredError()))
     .bail({ level: 'request' })
-    .customSanitizer((type) => capitalizeString(type))
+    .toLowerCase()
+    .customSanitizer(capitalizeString)
     .isIn(TICKET_TYPES)
     .withMessage(passValidationError(new TicketTypeInvalidError()))
     .bail({ level: 'request' });
@@ -37,7 +38,8 @@ export const validatePriority = () =>
     .notEmpty()
     .withMessage(passValidationError(new TicketPriorityRequiredError()))
     .bail({ level: 'request' })
-    .customSanitizer((priority) => capitalizeString(priority))
+    .toLowerCase()
+    .customSanitizer(capitalizeString)
     .isIn(TICKET_PRIORITIES)
     .withMessage(passValidationError(new TicketPriorityInvalidError()))
     .bail({ level: 'request' });
