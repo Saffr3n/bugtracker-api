@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { passValidationError } from '../utils';
+import { passValidationError } from '../utils/validation';
 import {
   TitleRequiredError,
   TitleTooShortError,

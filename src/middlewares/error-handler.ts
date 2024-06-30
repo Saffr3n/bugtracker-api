@@ -1,24 +1,20 @@
-import {
-  InternalServerError,
-  type ApiError,
-  type ClientError
-} from '../utils/errors';
+import { ApiError, ClientError, InternalServerError } from '../utils/errors';
 import { NODE_ENV } from '../constants/env';
 import type { Request, Response, NextFunction } from 'express';
 
-const isClientError = (err: ApiError): err is ClientError => {
-  return !!(err as ClientError).type;
-};
-
 export default (
-  err: ApiError,
+  err: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  if (!(err instanceof ApiError)) {
+    err = new ApiError(err);
+  }
+
   let clientErr: ClientError;
 
-  if (isClientError(err)) {
+  if (err instanceof ClientError) {
     clientErr = err;
   } else {
     console.error(err);

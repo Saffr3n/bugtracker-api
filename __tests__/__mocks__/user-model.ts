@@ -7,7 +7,7 @@ export default (db: MockDB) => {
     const users: UserDocument[] = [];
 
     for (let i = 0; i < LIMIT_DEFAULT_VALUE; i++) {
-      users.push(db.users[i]!);
+      users.push(db.users[i]);
     }
 
     return { exec: () => Promise.resolve(users) } as any;
@@ -22,7 +22,7 @@ export default (db: MockDB) => {
     const { username, email, $or } = filter!;
     const user = db.users.find((user) => {
       let regex: RegExp;
-      if ($or) regex = $or[0]!.username;
+      if ($or) regex = $or[0].username;
       else regex = username || email;
       const didMatchUsername = regex.test(user.username);
       const didMatchEmail = regex.test(user.email);
@@ -39,14 +39,17 @@ export default (db: MockDB) => {
   });
 
   jest.spyOn(User, 'findByIdAndUpdate').mockImplementation((id, update) => {
-    const user = db.users.find((user) => user.id === id)!;
-    const keys = Object.keys(update) as (keyof UserRaw)[];
+    const user = db.users.find((user) => user.id === id);
 
-    keys.forEach((key) => {
-      const field = update[key];
-      if (!field) return;
-      user[key] = field;
-    });
+    if (user) {
+      const keys = Object.keys(update) as (keyof UserRaw)[];
+
+      keys.forEach((key) => {
+        const field = update[key];
+        if (!field) return;
+        user[key] = field;
+      });
+    }
 
     return { exec: () => Promise.resolve(user) } as any;
   });

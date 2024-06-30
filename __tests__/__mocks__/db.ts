@@ -14,6 +14,9 @@ const admin = new User({
 });
 
 const managers: UserDocument[] = [];
+const developers: UserDocument[] = [];
+const users: UserDocument[] = [];
+
 for (let i = 0; i < AMOUNT_OF_MANAGERS; i++) {
   managers.push(
     new User({
@@ -25,7 +28,6 @@ for (let i = 0; i < AMOUNT_OF_MANAGERS; i++) {
   );
 }
 
-const developers: UserDocument[] = [];
 for (let i = 0; i < AMOUNT_OF_DEVELOPERS; i++) {
   developers.push(
     new User({
@@ -37,7 +39,6 @@ for (let i = 0; i < AMOUNT_OF_DEVELOPERS; i++) {
   );
 }
 
-const users: UserDocument[] = [];
 for (let i = 0; i < AMOUNT_OF_USERS; i++) {
   users.push(
     new User({

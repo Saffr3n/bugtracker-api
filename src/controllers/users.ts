@@ -1,6 +1,8 @@
 import User from '../models/user';
 import { create, getAll, getById, getByIdAndEdit } from '../services/users';
-import { validateLimit, validatePage, validateSort } from '../validators';
+import asyncHandler from '../middlewares/async-handler';
+import checkAuthorization from '../middlewares/authorization';
+import authenticate from '../middlewares/authenticate';
 import {
   validateUserId,
   validateUsername,
@@ -8,9 +10,8 @@ import {
   validatePassword,
   validateRole
 } from '../validators/users';
-import asyncHandler from '../middlewares/async-handler';
-import authenticate from '../middlewares/authenticate';
-import isAuthenticated from '../middlewares/authorization';
+import { validateLimit, validatePage, validateSort } from '../validators';
+import { noRoleEdit } from '../utils/authorization';
 import { UserNotFoundError } from '../utils/errors';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -67,10 +68,11 @@ export const getUser = [
 ];
 
 export const editUser = [
-  isAuthenticated()
+  checkAuthorization()
+    .isAuthenticated()
     .isOwnAccount()
     .isCorrectPassword()
-    .custom((user, req) => !req.body.role || user.role === 'Admin'),
+    .custom(noRoleEdit),
 
   validateUserId(),
   validateUsername(true),

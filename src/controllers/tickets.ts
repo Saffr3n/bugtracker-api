@@ -1,4 +1,6 @@
 import { create } from '../services/tickets';
+import asyncHandler from '../middlewares/async-handler';
+import checkAuthorization from '../middlewares/authorization';
 import {
   validateType,
   validatePriority,
@@ -6,12 +8,10 @@ import {
   validateDetail,
   validateProject
 } from '../validators/tickets';
-import asyncHandler from '../middlewares/async-handler';
-import isAuthenticated from '../middlewares/authorization';
 import type { Request, Response } from 'express';
 
 export const createTicket = [
-  isAuthenticated(),
+  checkAuthorization().isAuthenticated(),
 
   validateType(),
   validatePriority(),

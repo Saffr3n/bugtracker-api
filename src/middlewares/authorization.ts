@@ -10,12 +10,13 @@ import type { RequestHandler, Request } from 'express';
 interface AuthorizationChain extends AuthorizationMethods, RequestHandler {}
 interface AuthorizationMethods {
   custom(callback: AuthorizationCallback): AuthorizationChain;
+  isAuthenticated(): AuthorizationChain;
   isRole(requiredRole: UserRole): AuthorizationChain;
   isOwnAccount(): AuthorizationChain;
   isCorrectPassword(): AuthorizationChain;
 }
 
-type AuthorizationCallback = (
+export type AuthorizationCallback = (
   user: Express.User,
   request: Request
 ) => boolean | Promise<boolean>;
@@ -24,20 +25,17 @@ class Authorization {
   private readonly middlewares: RequestHandler[] = [];
   private readonly methods: AuthorizationMethods = {
     custom: this.custom.bind(this),
+    isAuthenticated: this.isAuthenticated.bind(this),
     isRole: this.isRole.bind(this),
     isOwnAccount: this.isOwnAccount.bind(this),
     isCorrectPassword: this.isCorrectPassword.bind(this)
   };
 
-  public constructor() {
-    this.createMiddleware(() => true);
-  }
-
   public build(): AuthorizationChain {
     const combinedMiddleware: RequestHandler = (req, res, next) => {
       const executeMiddleware = (index: number) => {
         if (index >= this.middlewares.length) return next();
-        const middleware = this.middlewares[index]!;
+        const middleware = this.middlewares[index];
         middleware(req, res, (err) => {
           if (err) return next(err);
           executeMiddleware(index + 1);
@@ -75,6 +73,10 @@ class Authorization {
 
   private custom(callback: AuthorizationCallback): AuthorizationChain {
     return this.createMiddleware(callback);
+  }
+
+  private isAuthenticated(): AuthorizationChain {
+    return this.createMiddleware(() => true);
   }
 
   private isRole(requiredRole: UserRole): AuthorizationChain {

@@ -7,16 +7,6 @@ export default (db: MockDB) => {
     return { exec: () => Promise.resolve(project) } as any;
   });
 
-  jest.spyOn(Project, 'findOne').mockImplementation((filter) => {
-    const { title } = filter!;
-    const project = db.projects.find((project) => {
-      const regex: RegExp = title;
-      return regex.test(project.title);
-    });
-
-    return { exec: () => Promise.resolve(project) } as any;
-  });
-
   jest.spyOn(Project, 'create').mockImplementation((data) => {
     const project = new Project(data);
     db.projects.push(project);

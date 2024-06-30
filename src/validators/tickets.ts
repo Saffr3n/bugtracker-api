@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { passValidationError, capitalizeString } from '../utils';
+import { passValidationError, capitalizeString } from '../utils/validation';
 import {
   TicketTypeRequiredError,
   TicketTypeInvalidError,

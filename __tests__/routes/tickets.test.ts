@@ -212,7 +212,7 @@ describe('tickets router', () => {
     });
 
     it('creates ticket with valid data', (done) => {
-      const { id } = db.projects[0]!;
+      const { id } = db.projects[0];
 
       request(app)
         .post('/session')

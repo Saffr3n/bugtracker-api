@@ -217,7 +217,7 @@ describe('user router', () => {
         .expect(200, (err, res) => {
           if (err) return done(err);
           expect(res.body.data).toHaveLength(LIMIT_DEFAULT_VALUE);
-          return done();
+          done();
         });
     });
 
@@ -246,7 +246,7 @@ describe('user router', () => {
     });
 
     it('gets user with valid userId and includes email only if requesting self', (done) => {
-      const { id } = db.users[0]!;
+      const { id } = db.users[0];
 
       request(app)
         .get(`/users/${id}`)
@@ -266,7 +266,7 @@ describe('user router', () => {
             .expect(200, (err, res) => {
               if (err) return done(err);
               expect(res.body.data.email).toBeDefined();
-              return done();
+              done();
             });
         });
     });
@@ -359,7 +359,7 @@ describe('user router', () => {
             .expect(200, (err, res) => {
               if (err) return done(err);
               expect(res.body.data.role).toBe('Admin');
-              return done();
+              done();
             });
         });
     });
@@ -379,7 +379,7 @@ describe('user router', () => {
             .expect(200, (err, res) => {
               if (err) return done(err);
               expect(res.body.data.username).toBe('Test');
-              return done();
+              done();
             });
         });
     });

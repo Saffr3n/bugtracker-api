@@ -12,6 +12,23 @@ export const getError = (req: Request, res: Response, next: NextFunction) => {
   if (!match) return next();
   const err = new clientErrors[match]();
   const { title, status, detail } = err;
-  const html = `<h1>${title}</h1>\n<h2>${status}</h2>\n<p>${detail}</p>`;
-  res.status(200).send(html);
+  res.status(200).send(createErrorHtml(title, status, detail));
 };
+
+const createErrorHtml = (
+  title: string,
+  status: number,
+  detail: string
+) => `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+  </head>
+  <body>
+    <h1>${title}</h1>
+    <h2>${status}</h2>
+    <p>${detail}</p>
+  </body>
+</html>`;

@@ -1,5 +1,9 @@
 import { query } from 'express-validator';
-import { passValidationError } from '../utils';
+import {
+  passValidationError,
+  isValidSort,
+  normalizeSort
+} from '../utils/validation';
 import {
   LimitInvalidError,
   LimitTooLowError,
@@ -42,17 +46,11 @@ export const validatePage = () =>
     .bail({ level: 'request' })
     .toInt();
 
-export const validateSort = <T, U extends { toJson(): Record<string, any> }, V>(
-  model: Model<T, {}, {}, {}, U, V>
-) =>
+export const validateSort = (model: Model<any>) =>
   query('sort')
     .optional()
     .trim()
-    .custom((sort: string) => {
-      const docKeys = Object.keys(new model().toJson());
-      const sortKeys = sort.replaceAll('-', '').split(' ');
-      return sortKeys.every((key) => docKeys.includes(key));
-    })
+    .custom(isValidSort(model))
     .withMessage(passValidationError(new SortInvalidError()))
     .bail({ level: 'request' })
-    .customSanitizer((sort: string) => sort.replaceAll(/(id|url)/g, '_id'));
+    .customSanitizer(normalizeSort);
