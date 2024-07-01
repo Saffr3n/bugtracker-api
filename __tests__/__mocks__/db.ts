@@ -1,67 +1,74 @@
-import bcrypt from 'bcryptjs';
 import User from '../../src/models/user';
 import Project from '../../src/models/project';
 
-const AMOUNT_OF_MANAGERS = 2;
-const AMOUNT_OF_DEVELOPERS = 10;
-const AMOUNT_OF_USERS = 50;
+let users: UserDocument[];
 
-const admin = new User({
-  username: 'admin',
-  email: 'admin@example.com',
-  hash: bcrypt.hashSync('Test1234', 12),
-  role: 'Admin'
-});
+const mockDb = () => {
+  createUsers();
 
-const managers: UserDocument[] = [];
-const developers: UserDocument[] = [];
-const users: UserDocument[] = [];
+  return {
+    users,
+    projects: [
+      new Project({
+        title: 'Test Project',
+        description: 'Test description...',
+        manager: users[0].id
+      })
+    ],
+    tickets: [] as TicketDocument[]
+  };
+};
 
-for (let i = 0; i < AMOUNT_OF_MANAGERS; i++) {
-  managers.push(
+const createUsers = () => {
+  const AMOUNT_OF_MANAGERS = 2;
+  const AMOUNT_OF_DEVELOPERS = 10;
+  const AMOUNT_OF_USERS = 50;
+
+  const arr: UserDocument[] = [];
+
+  arr.push(
     new User({
-      username: `manager_${i + 1}`,
-      email: `manager_${i + 1}.example.com`,
-      hash: bcrypt.hashSync('Test1234', 12),
-      role: 'Project Manager'
+      username: 'admin',
+      email: 'admin@example.com',
+      hash: 'Test1234',
+      role: 'Admin'
     })
   );
-}
 
-for (let i = 0; i < AMOUNT_OF_DEVELOPERS; i++) {
-  developers.push(
-    new User({
-      username: `developer_${i + 1}`,
-      email: `developer_${i + 1}.example.com`,
-      hash: bcrypt.hashSync('Test1234', 12),
-      role: 'Developer'
-    })
-  );
-}
+  for (let i = 0; i < AMOUNT_OF_MANAGERS; i++) {
+    arr.push(
+      new User({
+        username: `manager_${i + 1}`,
+        email: `manager_${i + 1}.example.com`,
+        hash: 'Test1234',
+        role: 'Project Manager'
+      })
+    );
+  }
 
-for (let i = 0; i < AMOUNT_OF_USERS; i++) {
-  users.push(
-    new User({
-      username: `user_${i + 1}`,
-      email: `user_${i + 1}.example.com`,
-      hash: bcrypt.hashSync('Test1234', 12)
-    })
-  );
-}
+  for (let i = 0; i < AMOUNT_OF_DEVELOPERS; i++) {
+    arr.push(
+      new User({
+        username: `developer_${i + 1}`,
+        email: `developer_${i + 1}.example.com`,
+        hash: 'Test1234',
+        role: 'Developer'
+      })
+    );
+  }
 
-const mockDb = () => ({
-  users: [admin, ...managers, ...developers, ...users],
+  for (let i = 0; i < AMOUNT_OF_USERS; i++) {
+    arr.push(
+      new User({
+        username: `user_${i + 1}`,
+        email: `user_${i + 1}.example.com`,
+        hash: 'Test1234'
+      })
+    );
+  }
 
-  projects: [
-    new Project({
-      title: 'Test Project',
-      description: 'Test description...',
-      manager: admin.id
-    })
-  ],
-
-  tickets: [] as TicketDocument[]
-});
+  users = arr;
+};
 
 export type MockDB = ReturnType<typeof mockDb>;
 export default mockDb;
