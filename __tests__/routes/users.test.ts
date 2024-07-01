@@ -221,13 +221,15 @@ describe('user router', () => {
         });
     });
 
-    it('gets users with valid url parameters or without any', (done) => {
-      request(app)
-        .get('/users')
-        .expect(200, /users retrieved/i, done);
-
+    it('gets users with valid url parameters', (done) => {
       request(app)
         .get('/users?limit=10&page=2&sort=id')
+        .expect(200, /users retrieved/i, done);
+    });
+
+    it('gets users without url parameters', (done) => {
+      request(app)
+        .get('/users')
         .expect(200, /users retrieved/i, done);
     });
   });
@@ -245,7 +247,7 @@ describe('user router', () => {
         .expect(404, /user not found/i, done);
     });
 
-    it('gets user with valid userId and includes email only if requesting self', (done) => {
+    it('gets user with valid userId and does not include email if requester is not the user', (done) => {
       const { id } = db.users[0];
 
       request(app)
@@ -253,7 +255,12 @@ describe('user router', () => {
         .expect(200, (err, res) => {
           if (err) return done(err);
           expect(res.body.data.email).toBeUndefined();
+          done();
         });
+    });
+
+    it('gets user with valid userId and includes email if requester is the user', (done) => {
+      const { id } = db.users[0];
 
       request(app)
         .post('/session')
@@ -281,7 +288,7 @@ describe('user router', () => {
         .expect(401, /unauthenticated/i, done);
     });
 
-    it('does not edit user if requester is not the user', (done) => {
+    it('does not edit user if requester is not the user and not admin', (done) => {
       const { id } = db.users.find((user) => user.username === 'user_1')!;
 
       request(app)
@@ -312,7 +319,7 @@ describe('user router', () => {
         });
     });
 
-    it('only lets admin edit user role', (done) => {
+    it('does not edit user role if requester is not admin', (done) => {
       const { id } = db.users.find((user) => user.username === 'user_1')!;
 
       request(app)
@@ -324,23 +331,268 @@ describe('user router', () => {
             .put(`/users/${id}`)
             .set('cookie', cookie)
             .send({ password: 'Test1234', role: 'Admin' })
-            .expect(403, /access denied/i);
+            .expect(403, /access denied/i, done);
         });
+    });
 
+    it('does not edit user with invalid userId', (done) => {
       request(app)
         .post('/session')
         .send({ username: 'admin', password: 'Test1234' })
         .then((res) => {
           const cookie = res.headers['set-cookie'] || '';
           request(app)
+            .put('/users/invalid')
+            .set('cookie', cookie)
+            .send({ password: 'Test1234' })
+            .expect(400, /user id invalid/i, done);
+        });
+    });
+
+    it('does not edit non-existent user', (done) => {
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${new ObjectId()}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234' })
+            .expect(404, /user not found/i, done);
+        });
+    });
+
+    it(`does not edit user with username shorter than ${USERNAME_MIN_LENGTH} characters`, (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
             .put(`/users/${id}`)
             .set('cookie', cookie)
-            .send({ password: 'Test1234', role: 'Admin' })
-            .expect(200, (err, res) => {
-              if (err) return done(err);
-              expect(res.body.data.role).toBe('Admin');
-              done();
-            });
+            .send({
+              password: 'Test1234',
+              username: createStringOfLength(USERNAME_MIN_LENGTH - 1)
+            })
+            .expect(400, /username too short/i, done);
+        });
+    });
+
+    it(`does not edit user with username longer than ${USERNAME_MAX_LENGTH} characters`, (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({
+              password: 'Test1234',
+              username: createStringOfLength(USERNAME_MAX_LENGTH + 1)
+            })
+            .expect(400, /username too long/i, done);
+        });
+    });
+
+    it('does not edit user with username that does not start with letter', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', username: '7est' })
+            .expect(400, /username start error/i, done);
+        });
+    });
+
+    it('does not edit user with username that contains invalid characters', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', username: 'te$t' })
+            .expect(400, /username invalid characters error/i, done);
+        });
+    });
+
+    it('does not edit user with username that contains consecutive special characters', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', username: 'te__st' })
+            .expect(400, /username consecutive characters error/i, done);
+        });
+    });
+
+    it('does not edit user with username that does not end with letter or number', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', username: 'test_' })
+            .expect(400, /username end error/i, done);
+        });
+    });
+
+    it('does not edit user with username that is already in use', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', username: 'admin' })
+            .expect(400, /username already in use/i, done);
+        });
+    });
+
+    it('does not edit user with invalid email', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', email: 'invalid@email' })
+            .expect(400, /email invalid/i, done);
+        });
+    });
+
+    it('does not edit user with email that is already in use', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', email: 'admin@example.com' })
+            .expect(400, /email already in use/i, done);
+        });
+    });
+
+    it(`does not edit user with new password shorter than ${PASSWORD_MIN_LENGTH} characters`, (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({
+              password: 'Test1234',
+              newPassword: createStringOfLength(PASSWORD_MIN_LENGTH - 1)
+            })
+            .expect(400, /password too short/i, done);
+        });
+    });
+
+    it('does not edit user with new password that does not contain lower case letter', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', newPassword: 'TEST1234' })
+            .expect(400, /password invalid/i, done);
+        });
+    });
+
+    it('does not edit user with new password that does not contain upper case letter', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', newPassword: 'test1234' })
+            .expect(400, /password invalid/i, done);
+        });
+    });
+
+    it('does not edit user with new password that does not contain number', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', newPassword: 'TESTtest' })
+            .expect(400, /password invalid/i, done);
+        });
+    });
+
+    it('does not edit user with new password that does not match confirmation field', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', newPassword: 'Test4321' })
+            .expect(400, /password confirmation error/i, done);
         });
     });
 
@@ -360,6 +612,26 @@ describe('user router', () => {
         });
     });
 
+    it('edits user role if requester is admin', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', role: 'Admin' })
+            .expect(200, (err, res) => {
+              if (err) return done(err);
+              expect(res.body.data.role).toBe('Admin');
+              done();
+            });
+        });
+    });
+
     it('edits authorized user', (done) => {
       const { id } = db.users.find((user) => user.username === 'user_1')!;
 
@@ -371,10 +643,10 @@ describe('user router', () => {
           request(app)
             .put(`/users/${id}`)
             .set('cookie', cookie)
-            .send({ password: 'Test1234', username: 'Test' })
+            .send({ password: 'Test1234', username: 'test' })
             .expect(200, (err, res) => {
               if (err) return done(err);
-              expect(res.body.data.username).toBe('Test');
+              expect(res.body.data.username).toBe('test');
               done();
             });
         });
@@ -390,7 +662,7 @@ describe('user router', () => {
         .expect(401, /unauthenticated/i, done);
     });
 
-    it('does not delete user if requester is not the user', (done) => {
+    it('does not delete user if requester is not the user or admin', (done) => {
       const { id } = db.users.find((user) => user.username === 'user_1')!;
 
       request(app)
@@ -418,6 +690,34 @@ describe('user router', () => {
             .set('cookie', cookie)
             .send({ password: 'incorrect' })
             .expect(403, /access denied/i, done);
+        });
+    });
+
+    it('does not delete user with invalid userId', (done) => {
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .delete('/users/invalid')
+            .set('cookie', cookie)
+            .send({ password: 'Test1234' })
+            .expect(400, /user id invalid/i, done);
+        });
+    });
+
+    it('does not delete non-existent user', (done) => {
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .delete(`/users/${new ObjectId()}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234' })
+            .expect(404, /user not found/i, done);
         });
     });
 
