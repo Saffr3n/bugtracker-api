@@ -53,4 +53,11 @@ export default (db: MockDB) => {
 
     return { exec: () => Promise.resolve(user) } as any;
   });
+
+  jest.spyOn(User, 'findByIdAndDelete').mockImplementation((id) => {
+    const index = db.users.findIndex((user) => user.id === id);
+    const user = db.users[index];
+    if (user) db.users.splice(index, 1);
+    return { exec: () => Promise.resolve(user) } as any;
+  });
 };

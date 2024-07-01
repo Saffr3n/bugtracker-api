@@ -8,7 +8,6 @@ import {
   validateDetail,
   validateProject
 } from '../validators/tickets';
-import type { Request, Response } from 'express';
 
 export const createTicket = [
   checkAuthorization().isAuthenticated(),
@@ -19,8 +18,9 @@ export const createTicket = [
   validateDetail(),
   validateProject(),
 
-  asyncHandler(async (req: Request, res: Response) => {
-    const ticket = await create({ ...req.body, submitter: req.user!.id });
+  asyncHandler(async (req, res) => {
+    const ticket = await create({ ...req.body, submitter: req.user?.id });
+
     const json: SuccessResponseJson = {
       status: 200,
       title: 'Ticket Created',

@@ -312,23 +312,7 @@ describe('user router', () => {
         });
     });
 
-    it('does not edit user with invalid user role', (done) => {
-      const { id } = db.users.find((user) => user.username === 'user_1')!;
-
-      request(app)
-        .post('/session')
-        .send({ username: 'admin', password: 'Test1234' })
-        .then((res) => {
-          const cookie = res.headers['set-cookie'] || '';
-          request(app)
-            .put(`/users/${id}`)
-            .set('cookie', cookie)
-            .send({ password: 'Test1234', role: 'invalid' })
-            .expect(400, /user role invalid/i, done);
-        });
-    });
-
-    it('does not let non-admin users edit user role', (done) => {
+    it('only lets admin edit user role', (done) => {
       const { id } = db.users.find((user) => user.username === 'user_1')!;
 
       request(app)
@@ -340,12 +324,8 @@ describe('user router', () => {
             .put(`/users/${id}`)
             .set('cookie', cookie)
             .send({ password: 'Test1234', role: 'Admin' })
-            .expect(403, /access denied/i, done);
+            .expect(403, /access denied/i);
         });
-    });
-
-    it('lets admin edit user role', (done) => {
-      const { id } = db.users.find((user) => user.username === 'user_1')!;
 
       request(app)
         .post('/session')
@@ -364,6 +344,22 @@ describe('user router', () => {
         });
     });
 
+    it('does not edit user with invalid user role', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'admin', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .put(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234', role: 'invalid' })
+            .expect(400, /user role invalid/i, done);
+        });
+    });
+
     it('edits authorized user', (done) => {
       const { id } = db.users.find((user) => user.username === 'user_1')!;
 
@@ -379,6 +375,68 @@ describe('user router', () => {
             .expect(200, (err, res) => {
               if (err) return done(err);
               expect(res.body.data.username).toBe('Test');
+              done();
+            });
+        });
+    });
+  });
+
+  describe('DELETE /users/:userId (get user by id and delete)', () => {
+    it('does not delete user without active session', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .delete(`/users/${id}`)
+        .expect(401, /unauthenticated/i, done);
+    });
+
+    it('does not delete user if requester is not the user', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_2', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .delete(`/users/${id}`)
+            .set('cookie', cookie)
+            .expect(403, /access denied/i, done);
+        });
+    });
+
+    it('does not delete user with incorrect password', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .delete(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'incorrect' })
+            .expect(403, /access denied/i, done);
+        });
+    });
+
+    it('deletes authorized user', (done) => {
+      const { id } = db.users.find((user) => user.username === 'user_1')!;
+
+      request(app)
+        .post('/session')
+        .send({ username: 'user_1', password: 'Test1234' })
+        .then((res) => {
+          const cookie = res.headers['set-cookie'] || '';
+          request(app)
+            .delete(`/users/${id}`)
+            .set('cookie', cookie)
+            .send({ password: 'Test1234' })
+            .expect(200, (err) => {
+              if (err) return done(err);
+              const user = db.users.find((user) => user.id === id);
+              expect(user).toBeUndefined();
               done();
             });
         });

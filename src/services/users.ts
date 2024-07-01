@@ -46,12 +46,11 @@ export const getByUsernameOrEmail = (usernameOrEmail: string) => {
 
 export const getByIdAndEdit = async (id: string, data: EditionData) => {
   const { username, email, role, newPassword } = data;
-  const update = {
-    username,
-    email,
-    role,
-    hash: newPassword && (await bcrypt.hash(newPassword, 12))
-  };
-
+  const hash = newPassword && (await bcrypt.hash(newPassword, 12));
+  const update = { username, email, role, hash };
   return await User.findByIdAndUpdate(id, update, { new: true }).exec();
+};
+
+export const getByIdAndDelete = (id: string) => {
+  return User.findByIdAndDelete(id).exec();
 };

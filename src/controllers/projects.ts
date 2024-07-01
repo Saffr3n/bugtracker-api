@@ -2,7 +2,6 @@ import { create } from '../services/projects';
 import asyncHandler from '../middlewares/async-handler';
 import checkAuthorization from '../middlewares/authorization';
 import { validateTitle, validateDetail } from '../validators/projects';
-import type { Request, Response } from 'express';
 
 export const createProject = [
   checkAuthorization().isAuthenticated().isRole('Project Manager'),
@@ -10,8 +9,9 @@ export const createProject = [
   validateTitle(),
   validateDetail(),
 
-  asyncHandler(async (req: Request, res: Response) => {
-    const project = await create({ ...req.body, manager: req.user!.id });
+  asyncHandler(async (req, res) => {
+    const project = await create({ ...req.body, manager: req.user?.id });
+
     const json: SuccessResponseJson = {
       status: 200,
       title: 'Project Created',
