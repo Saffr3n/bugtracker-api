@@ -3,6 +3,12 @@ import { LIMIT_DEFAULT_VALUE } from '../../src/constants/validation';
 import type { MockDB } from './db';
 
 export default (db: MockDB) => {
+  jest.spyOn(User, 'create').mockImplementation((data) => {
+    const user = new User(data);
+    db.users.push(user);
+    return Promise.resolve(user) as any;
+  });
+
   jest.spyOn(User, 'find').mockImplementation(() => {
     const users: UserDocument[] = [];
 
@@ -30,12 +36,6 @@ export default (db: MockDB) => {
     });
 
     return { exec: () => Promise.resolve(user) } as any;
-  });
-
-  jest.spyOn(User, 'create').mockImplementation((data) => {
-    const user = new User(data);
-    db.users.push(user);
-    return Promise.resolve(user) as any;
   });
 
   jest.spyOn(User, 'findByIdAndUpdate').mockImplementation((id, update) => {

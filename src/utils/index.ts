@@ -25,6 +25,8 @@ export function documentRefToJson<T extends Document>(
 export function documentRefToJson<T extends Document>(
   field: Types.ObjectId | T | (Types.ObjectId | T)[]
 ) {
+  if (!field) return field;
+
   if (Array.isArray(field)) {
     return isDocumentRefPopulated(field)
       ? field.map((item) => item.toJson())

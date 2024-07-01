@@ -7,7 +7,11 @@ import { createStringOfLength } from '../__utils__';
 import {
   TITLE_MIN_LENGTH,
   TITLE_MAX_LENGTH,
-  DETAIL_MAX_LENGTH
+  DETAIL_MAX_LENGTH,
+  LIMIT_MIN_VALUE,
+  LIMIT_MAX_VALUE,
+  LIMIT_DEFAULT_VALUE,
+  PAGE_MIN_VALUE
 } from '../../src/constants/validation';
 
 describe('projects router', () => {
@@ -124,6 +128,66 @@ describe('projects router', () => {
             .send({ title: 'Test Project' })
             .expect(200, /project created/i, done);
         });
+    });
+  });
+
+  describe('GET /projects (get all projects)', () => {
+    it('does not get projects with invalid "limit" url parameter', (done) => {
+      request(app)
+        .get('/projects?limit=invalid')
+        .expect(400, /limit invalid/i, done);
+    });
+
+    it(`does not get projects with "limit" url parameter being less than ${LIMIT_MIN_VALUE}`, (done) => {
+      request(app)
+        .get(`/projects?limit=${LIMIT_MIN_VALUE - 1}`)
+        .expect(400, /limit too low/i, done);
+    });
+
+    it(`does not get projects with "limit" url parameter being more than ${LIMIT_MAX_VALUE}`, (done) => {
+      request(app)
+        .get(`/projects?limit=${LIMIT_MAX_VALUE + 1}`)
+        .expect(400, /limit too high/i, done);
+    });
+
+    it('does not get projects with invalid "page" url parameter', (done) => {
+      request(app)
+        .get('/projects?page=invalid')
+        .expect(400, /page invalid/i, done);
+    });
+
+    it(`does not get projects with "page" url parameter being less than ${PAGE_MIN_VALUE}`, (done) => {
+      request(app)
+        .get(`/projects?page=${PAGE_MIN_VALUE - 1}`)
+        .expect(400, /page too low/i, done);
+    });
+
+    it('does not get projects with invalid "sort" url parameter', (done) => {
+      request(app)
+        .get('/projects?sort=invalid')
+        .expect(400, /sort invalid/i, done);
+    });
+
+    it(`gets ${LIMIT_DEFAULT_VALUE} projects without "limit" url parameter`, (done) => {
+      request(app)
+        .get('/projects')
+        .expect(200, (err, res) => {
+          if (err) return done(err);
+          expect(res.body.data).toHaveLength(LIMIT_DEFAULT_VALUE);
+          done();
+        });
+    });
+
+    it('gets projects with valid url parameters', (done) => {
+      request(app)
+        .get('/projects?limit=10&page=2&sort=id')
+        .expect(200, /projects retrieved/i, done);
+    });
+
+    it('gets projects without url parameters', (done) => {
+      request(app)
+        .get('/projects')
+        .expect(200, /projects retrieved/i, done);
     });
   });
 });
